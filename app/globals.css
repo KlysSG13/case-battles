@@ -223,3 +223,108 @@ body {
     white-space: normal !important;
   }
 }
+
+/* ---- Синт-дрон: парение, сопла, пульс ядра, реакции ---- */
+
+.drone {
+  animation: drone-float 3.4s ease-in-out infinite;
+}
+
+.drone-sleep {
+  animation: drone-float-slow 6s ease-in-out infinite;
+  filter: saturate(0.5) brightness(0.75);
+}
+
+.drone-happy {
+  animation: drone-bounce 0.55s cubic-bezier(0.3, 1.6, 0.4, 1) 3;
+}
+
+.drone-glitch {
+  animation: drone-glitch 0.35s steps(2, jump-none) 1;
+}
+
+.drone-prop {
+  animation: drone-spin 0.5s linear infinite;
+}
+
+.drone-prop-ccw {
+  animation-direction: reverse;
+}
+
+.drone-sleep .drone-prop {
+  animation-duration: 3s;
+}
+
+.drone-core {
+  animation: drone-pulse 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.drone-sleep .drone-core {
+  animation-duration: 5s;
+}
+
+.drone-shadow {
+  animation: drone-shadow 3.4s ease-in-out infinite;
+}
+
+.drone-zzz {
+  animation: drone-zzz 2.6s ease-in-out infinite;
+}
+
+@keyframes drone-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7%); }
+}
+
+@keyframes drone-float-slow {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-4%) rotate(1.5deg); }
+}
+
+@keyframes drone-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-22%) scale(1.06); }
+}
+
+@keyframes drone-glitch {
+  0% { transform: translate(0); filter: none; }
+  30% { transform: translate(-2px, 1px); filter: hue-rotate(60deg); }
+  60% { transform: translate(2px, -1px); }
+  100% { transform: translate(0); filter: none; }
+}
+
+@keyframes drone-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes drone-pulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+@keyframes drone-shadow {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+  50% { transform: translateX(-50%) scale(0.8); opacity: 0.3; }
+}
+
+@keyframes drone-zzz {
+  0% { opacity: 0; transform: translateY(2px); }
+  40% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drone,
+  .drone-sleep,
+  .drone-happy,
+  .drone-glitch,
+  .drone-prop,
+  .drone-core,
+  .drone-shadow,
+  .drone-zzz {
+    animation: none !important;
+  }
+}

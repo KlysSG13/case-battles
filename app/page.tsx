@@ -287,6 +287,11 @@ export default function Page() {
       {screen === "result" && resultPayload && (
         <ResultScreen
           payload={resultPayload}
+          mascot={
+            boot?.profile?.mascot
+              ? { charge: boot.profile.mascot.charge, sleeping: boot.profile.mascot.sleeping }
+              : undefined
+          }
           onHome={openHome}
           onProfile={() => {
             setProfileRefresh((n) => n + 1);

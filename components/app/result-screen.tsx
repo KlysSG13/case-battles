@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProgressRing } from "@/components/app/rings";
+import { Drone } from "@/components/app/drone";
 import { apiFetch, haptic, type AttemptResult, type CompletedAttempt } from "@/lib/client";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ export interface ResultPayload {
 
 interface ResultScreenProps {
   payload: ResultPayload;
+  mascot?: { charge: number; sleeping: boolean };
   onHome: () => void;
   onProfile: () => void;
   onRetry: () => void;
@@ -44,6 +46,7 @@ function percentColor(percent: number): string {
 
 export function ResultScreen({
   payload,
+  mascot,
   onHome,
   onProfile,
   onRetry,
@@ -178,13 +181,27 @@ export function ResultScreen({
   const hasMoreAttempts = (r.attemptsLeft ?? 0) > 0;
   const modelAnswer = r.modelAnswer; // скрыт сервером между попытками
 
+  const droneState = mascot?.sleeping
+    ? "sleep"
+    : leveledUp || r.percent >= 70
+      ? "happy"
+      : "idle";
+
   return (
     <div className="animate-rise min-h-dvh space-y-4 p-4 pb-8">
       <div className="flex flex-col items-center pt-4">
-        <ProgressRing value={r.percent} size={150} stroke={10} color={percentColor(r.percent)}>
-          <span className="font-display text-4xl font-bold text-fog">{r.percent}</span>
-          <span className="font-display text-[10px] tracking-[0.25em] text-dim">ПРОЦЕНТОВ</span>
-        </ProgressRing>
+        <div className="relative">
+          <ProgressRing value={r.percent} size={150} stroke={10} color={percentColor(r.percent)}>
+            <span className="font-display text-4xl font-bold text-fog">{r.percent}</span>
+            <span className="font-display text-[10px] tracking-[0.25em] text-dim">ПРОЦЕНТОВ</span>
+          </ProgressRing>
+          {/* дрон-компаньон реагирует на исход */}
+          {mascot && (
+            <div className="absolute -right-5 -top-3">
+              <Drone charge={mascot.charge} state={droneState} size={62} />
+            </div>
+          )}
+        </div>
         <p className="mt-3 text-center font-display text-sm font-semibold text-fog">{r.caseTitle}</p>
         {payload.maxAttempts > 1 && (
           <p className="mt-1 font-display text-[11px] text-dim">

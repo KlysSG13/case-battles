@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Eye, EyeOff, Flame, Gift, Lock, Trophy, Zap } from "lucide-react";
+import { Drone } from "@/components/app/drone";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -208,13 +209,31 @@ export function ProfileScreen({
             </p>
           </CardContent>
         </Card>
-        <Card className={cn(profile.mascot.xpBonusActive && "border-neon/40")}>
-          <CardContent className="p-3.5">
-            <p className="font-display text-base font-bold text-fog">{profile.mascot.charge}%</p>
-            <p className="text-[10px] leading-tight text-dim">
-              дрон · {profile.mascot.label}
-              {profile.mascot.xpBonusActive && " · +10% XP"}
-            </p>
+        <Card className={cn("col-span-3 flex items-center gap-4 border-line py-4", profile.mascot.xpBonusActive && "border-neon/40")}>
+          <CardContent className="flex w-full items-center gap-4 p-0 pl-4">
+            <Drone
+              charge={profile.mascot.charge}
+              state={profile.mascot.sleeping ? "sleep" : "idle"}
+              size={96}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-sm font-bold text-fog">
+                Синт-дрон · {profile.mascot.charge}%
+              </p>
+              <p className="text-[11px] text-dim">{profile.mascot.label}</p>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className={cn(
+                    "h-full rounded-full",
+                    profile.mascot.charge >= 60 ? "bg-neon" : profile.mascot.charge >= 25 ? "bg-amber-400" : "bg-magenta"
+                  )}
+                  style={{ width: `${profile.mascot.charge}%` }}
+                />
+              </div>
+              {profile.mascot.xpBonusActive && (
+                <p className="mt-1.5 font-display text-[10px] tracking-wider text-neon">БОНУС +10% XP АКТИВЕН</p>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

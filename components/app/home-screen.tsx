@@ -4,6 +4,7 @@ import { ChevronRight, Flame, Play, Plus, Swords, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Drone } from "@/components/app/drone";
 import type { Bootstrap } from "@/lib/client";
 import { haptic } from "@/lib/client";
 
@@ -68,16 +69,25 @@ export function HomeScreen({
           <h1 className="font-display text-xl font-bold text-fog">
             Привет, <span className="text-neon text-glow">{profile.firstName}</span>
           </h1>
+          <div className="mt-1 flex items-center gap-3 text-dim">
+            <span className="flex items-center gap-1 font-display text-[12px]" title="Серия дней">
+              <Flame className="h-3.5 w-3.5 text-magenta" />
+              {profile.streakCurrent}
+            </span>
+            <span className="flex items-center gap-1 font-display text-[12px]" title={`Лига ${profile.league.title}`}>
+              {profile.league.emoji}
+              {profile.rating}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-3 text-dim">
-          <span className="flex items-center gap-1 font-display text-[12px]" title="Серия дней">
-            <Flame className="h-3.5 w-3.5 text-magenta" />
-            {profile.streakCurrent}
-          </span>
-          <span className="flex items-center gap-1 font-display text-[12px]" title={`Лига ${profile.league.title}`}>
-            {profile.league.emoji}
-            {profile.rating}
-          </span>
+        {/* мини-дрон: заряд и состояние читаются сразу */}
+        <div className="flex flex-col items-center" title={`Дрон: ${profile.mascot.charge}% · ${profile.mascot.label}`}>
+          <Drone
+            charge={profile.mascot.charge}
+            state={profile.mascot.sleeping ? "sleep" : "idle"}
+            size={56}
+          />
+          <span className="font-display text-[10px] text-dim">{profile.mascot.charge}%</span>
         </div>
       </header>
 
