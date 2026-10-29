@@ -20,6 +20,7 @@ import { FREE_DAILY_LIMIT, DAILY_RATE_LIMIT } from "./gamification";
 import { levelFromXp } from "./levels";
 import { mskDayStartUtc } from "./msk";
 import { tgApi } from "./telegram";
+import { isProActive } from "./entitlements";
 
 export async function createAiDuel(
   user: User,
@@ -211,7 +212,7 @@ export async function solveDuel(
     completedRoundsToday(user.id),
     prisma.attempt.count({ where: { userId: user.id, startedAt: { gte: dayStart } } }),
   ]);
-  if (!fresh.isPro && roundsToday >= FREE_DAILY_LIMIT) {
+  if (!isProActive(fresh) && roundsToday >= FREE_DAILY_LIMIT) {
     return { ok: false, status: 403, code: "quota", message: "Бесплатные раунды на сегодня закончились" };
   }
   if (attemptsToday >= DAILY_RATE_LIMIT) {

@@ -15,6 +15,7 @@ import { coreCasesForDomain } from "@/lib/content/core";
 import { completedRoundsToday } from "@/lib/rounds";
 import { FREE_DAILY_LIMIT, DAILY_RATE_LIMIT } from "@/lib/gamification";
 import { mskDayStartUtc } from "@/lib/msk";
+import { isProActive } from "@/lib/entitlements";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
     completedRoundsToday(user.id),
     prisma.attempt.count({ where: { userId: user.id, startedAt: { gte: dayStart } } }),
   ]);
-  if (!user.isPro && roundsToday >= FREE_DAILY_LIMIT) {
+  if (!isProActive(user) && roundsToday >= FREE_DAILY_LIMIT) {
     return NextResponse.json(
       { error: "Бесплатные раунды на сегодня закончились", code: "quota" },
       { status: 403 }

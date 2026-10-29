@@ -1,6 +1,7 @@
 import type { User } from "@prisma/client";
 import { levelProgress } from "./levels";
 import { leagueFor, nextLeagueFor, LEAGUES } from "./modes";
+import { isProActive } from "./entitlements";
 
 export interface ProfilePayload {
   firstName: string;
@@ -73,7 +74,9 @@ export function profilePayload(
     xpTotal: user.xpTotal,
     streakCurrent: user.streakCurrent,
     streakBest: user.streakBest,
-    isPro: user.isPro,
+    isPro: isProActive(user),
+    proUntil: user.proUntil?.toISOString() ?? null,
+    hintsBalance: user.hintsBalance,
     profilePublic: user.profilePublic,
     rating: user.rating,
     league: leagueProgress(user.rating),

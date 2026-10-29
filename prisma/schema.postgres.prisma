@@ -15,25 +15,32 @@ datasource db {
 }
 
 model User {
-  id               Int           @id @default(autoincrement())
-  telegramId       Int           @unique
-  username         String?
-  firstName        String
-  xpTotal          Int           @default(0)
-  level            Int           @default(1)
-  streakCurrent    Int           @default(0)
-  streakBest       Int           @default(0)
-  lastActiveDate   DateTime?
-  isPro            Boolean       @default(false)
-  profilePublic    Boolean       @default(true)
-  rating           Int           @default(1000)
-  mascotCharge     Int           @default(50)
-  mascotDay        DateTime?
+  id                Int            @id @default(autoincrement())
+  telegramId        Int            @unique
+  username          String?
+  firstName         String
+  xpTotal           Int            @default(0)
+  level             Int            @default(1)
+  streakCurrent     Int            @default(0)
+  streakBest        Int            @default(0)
+  lastActiveDate    DateTime?
+  // PRO: единственный источник истины — proUntil (колонки isPro нет)
+  proUntil          DateTime?
+  hintsBalance      Int            @default(0)
+  lastHintGrantDate DateTime?
+  equippedSkin      String?
+  equippedAura      String?
+  profilePublic     Boolean        @default(true)
+  rating            Int            @default(1000)
+  mascotCharge      Int            @default(50)
+  mascotDay         DateTime?
   rewardsUnlockedAt DateTime?
-  createdAt        DateTime      @default(now())
-  attempts         Attempt[]
-  badges           UserBadge[]
-  reminders        ReminderLog[]
+  createdAt         DateTime       @default(now())
+  attempts          Attempt[]
+  badges            UserBadge[]
+  reminders         ReminderLog[]
+  payments          Payment[]
+  cosmetics         UserCosmetic[]
 }
 
 model Domain {
@@ -54,6 +61,7 @@ model Case {
   timeLimitSec Int         @default(240)
   difficulty   Int         @default(1)
   isActive     Boolean     @default(true)
+  hint         String?
   criteria     Criterion[]
   attempts     Attempt[]
 }
@@ -161,4 +169,34 @@ model RatingMatch {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// Платежи Telegram Stars (XTR) — аудит-лог и идемпотентность по chargeId
+model Payment {
+  id                       Int       @id @default(autoincrement())
+  userId                   Int
+  user                     User      @relation(fields: [userId], references: [id])
+  sku                      String
+  kind                     String // "pro30" | "hints" | "cosmetic"
+  stars                    Int
+  payload                  String
+  telegramPaymentChargeId  String    @unique
+  providerPaymentChargeId  String?
+  status                   String    @default("paid") // "paid" | "refunded"
+  refundedAt               DateTime?
+  createdAt                DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// Косметика дрона во владении игрока
+model UserCosmetic {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  sku        String
+  source     String // "purchase" | "level" | "pro"
+  acquiredAt DateTime @default(now())
+
+  @@unique([userId, sku])
 }

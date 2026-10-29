@@ -3,6 +3,7 @@ import { authenticateRequest } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { profilePayload } from "@/lib/profile";
 import { FREE_DAILY_LIMIT } from "@/lib/gamification";
+import { isProActive } from "@/lib/entitlements";
 import { tickMascot, mascotLabel } from "@/lib/mascot";
 import { MODE_LIST } from "@/lib/modes";
 import { mskDayStartUtc, mskDayString } from "@/lib/msk";
@@ -94,8 +95,8 @@ export async function GET(req: NextRequest) {
       : null,
     quota: {
       usedToday: completedToday,
-      limit: user.isPro ? null : FREE_DAILY_LIMIT,
-      remaining: user.isPro ? null : Math.max(0, FREE_DAILY_LIMIT - completedToday),
+      limit: isProActive(user) ? null : FREE_DAILY_LIMIT,
+      remaining: isProActive(user) ? null : Math.max(0, FREE_DAILY_LIMIT - completedToday),
     },
   });
 }

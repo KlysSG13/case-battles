@@ -5,6 +5,7 @@ import { MODES, isMode, type Mode, type Difficulty } from "@/lib/modes";
 import { completeAttempt, completedRoundsToday } from "@/lib/rounds";
 import { FREE_DAILY_LIMIT, DAILY_RATE_LIMIT } from "@/lib/gamification";
 import { mskDayStartUtc } from "@/lib/msk";
+import { isProActive } from "@/lib/entitlements";
 import type { Scenario } from "@/lib/scenario";
 
 export const runtime = "nodejs";
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
     // квота: раунд уже оплачен квотой при попытке №1; новая квота — только для нового раунда
     const roundCounted = completed.some((a) => a.attemptNo === 1);
     if (!roundCounted) {
-      if (!user.isPro && roundsToday >= FREE_DAILY_LIMIT) {
+      if (!isProActive(user) && roundsToday >= FREE_DAILY_LIMIT) {
         return NextResponse.json(
           { error: "Бесплатные раунды на сегодня закончились", code: "quota" },
           { status: 403 }
@@ -186,7 +187,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  if (!user.isPro && roundsToday >= FREE_DAILY_LIMIT) {
+  if (!isProActive(user) && roundsToday >= FREE_DAILY_LIMIT) {
     return NextResponse.json(
       { error: "Бесплатные кейсы на сегодня закончились", code: "quota" },
       { status: 403 }

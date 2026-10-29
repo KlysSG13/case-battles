@@ -5,6 +5,7 @@ import { profilePayload } from "@/lib/profile";
 import { FREE_DAILY_LIMIT } from "@/lib/gamification";
 import { tickMascot, mascotLabel } from "@/lib/mascot";
 import { mskDayStartUtc } from "@/lib/msk";
+import { isProActive } from "@/lib/entitlements";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,8 +47,8 @@ export async function GET(req: NextRequest) {
     }),
     quota: {
       usedToday: completedRounds,
-      limit: user.isPro ? null : FREE_DAILY_LIMIT,
-      remaining: user.isPro ? null : Math.max(0, FREE_DAILY_LIMIT - completedRounds),
+      limit: isProActive(user) ? null : FREE_DAILY_LIMIT,
+      remaining: isProActive(user) ? null : Math.max(0, FREE_DAILY_LIMIT - completedRounds),
     },
     badges: allBadges.map((b) => ({
       code: b.code,
