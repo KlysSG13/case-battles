@@ -1,0 +1,161 @@
+// Prisma + SQLite. Схема переносима на PostgreSQL:
+// без enum-типов и Json-полей (статусы и JSON — String).
+// ReminderLog — служебная таблица для дедупа cron-напоминаний (§6: не более 1 в сутки).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int           @id @default(autoincrement())
+  telegramId       Int           @unique
+  username         String?
+  firstName        String
+  xpTotal          Int           @default(0)
+  level            Int           @default(1)
+  streakCurrent    Int           @default(0)
+  streakBest       Int           @default(0)
+  lastActiveDate   DateTime?
+  isPro            Boolean       @default(false)
+  profilePublic    Boolean       @default(true)
+  rating           Int           @default(1000)
+  mascotCharge     Int           @default(50)
+  mascotDay        DateTime?
+  rewardsUnlockedAt DateTime?
+  createdAt        DateTime      @default(now())
+  attempts         Attempt[]
+  badges           UserBadge[]
+  reminders        ReminderLog[]
+}
+
+model Domain {
+  id    Int    @id @default(autoincrement())
+  slug  String @unique
+  title String
+  emoji String
+  sort  Int    @default(0)
+  cases Case[]
+}
+
+model Case {
+  id           Int         @id @default(autoincrement())
+  domainId     Int
+  domain       Domain      @relation(fields: [domainId], references: [id])
+  title        String
+  body         String
+  timeLimitSec Int         @default(240)
+  difficulty   Int         @default(1)
+  isActive     Boolean     @default(true)
+  criteria     Criterion[]
+  attempts     Attempt[]
+}
+
+model Criterion {
+  id          Int    @id @default(autoincrement())
+  caseId      Int
+  case        Case   @relation(fields: [caseId], references: [id])
+  name        String
+  description String
+  weight      Int    @default(0)
+  maxPoints   Int    @default(10)
+
+  @@index([caseId])
+}
+
+model Attempt {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+  caseId       Int?
+  case         Case?     @relation(fields: [caseId], references: [id])
+  answer       String
+  status       String    @default("pending")
+  startedAt    DateTime
+  submittedAt  DateTime?
+  timeSpentSec Int?
+  percent      Int?
+  xpEarned     Int       @default(0)
+  aiRaw        String?
+  mode         String    @default("classic")
+  difficulty   String    @default("normal")
+  roundId      String?
+  attemptNo    Int       @default(1)
+  isBest       Boolean   @default(false)
+  scenarioJson String?
+  missedJson   String?
+
+  @@index([userId, startedAt])
+  @@index([caseId])
+  @@index([roundId])
+}
+
+model Badge {
+  id          Int         @id @default(autoincrement())
+  code        String      @unique
+  title       String
+  description String
+  emoji       String
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  badgeId   Int
+  awardedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+}
+
+model ReminderLog {
+  id     Int      @id @default(autoincrement())
+  userId Int
+  user   User     @relation(fields: [userId], references: [id])
+  date   String
+  type   String   @default("streak")
+  sentAt DateTime @default(now())
+
+  @@unique([userId, date, type])
+}
+
+// Асинхронные дуэли: bUserId = null -> AI-дуэль; rivalJson хранит ответ
+// AI-соперника и его оценку (для PvP оба ответа — в Attempt через a/bAttemptId).
+model Duel {
+  id           Int       @id @default(autoincrement())
+  caseId       Int
+  mode         String
+  difficulty   String    @default("normal")
+  aUserId      Int
+  bUserId      Int?
+  style        String?
+  status       String    @default("open")
+  aAttemptId   Int?
+  bAttemptId   Int?
+  winnerUserId Int?
+  delta        Int?
+  rivalJson    String?
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime
+
+  @@index([status, expiresAt])
+}
+
+// Журнал изменений рейтинга (Elo-лайт)
+model RatingMatch {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  duelId    Int?
+  delta     Int
+  before    Int
+  after     Int
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
