@@ -18,10 +18,14 @@ interface TmaUser {
 }
 
 /**
- * Проверка initData из Telegram по официальной спецификации:
- * data_check_string = пары key=value (без hash и signature), сортировка по ключу, соединение \n;
+ * Проверка initData из Telegram WebApp:
+ * data_check_string = пары key=value (исключается ТОЛЬКО hash), сортировка, соединение \n;
  * secret_key = HMAC_SHA256(key="WebAppData", data=BOT_TOKEN);
- * hash = HMAC_SHA256(key=secret_key, data=data_check_string), hex, сравнение constant-time.
+ * hash = HMAC_SHA256(key=secret_key, data=data_check_string), hex, constant-time сравнение.
+ *
+ * ВАЖНО: поле signature УЧАСТВУЕТ в data-check-string. Подтверждено перебором на проде:
+ * Telegram подписывает initData вместе с signature, исключение signature ломает проверку
+ * на всех современных клиентах (эксперимент от 2026-10, см. DEPLOY.md, раздел Troubleshooting).
  */
 export function verifyInitData(
   initData: string,
@@ -33,7 +37,7 @@ export function verifyInitData(
 
   const pairs: string[] = [];
   for (const [key, value] of params.entries()) {
-    if (key === "hash" || key === "signature") continue;
+    if (key === "hash") continue;
     pairs.push(`${key}=${value}`);
   }
   pairs.sort();
