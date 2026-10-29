@@ -21,7 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* Синхронная загрузка (без next/script): window.Telegram.WebApp готов
             ДО гидратации и первого apiFetch — initData не может быть пустой.
-            next/script beforeInteractive в App Router рендерит async-тег и создаёт гонку. */}
+            next/script beforeInteractive в App Router рендерит async-тег и создаёт гонку.
+            Прод-фикс v1.0.1 (см. DEPLOY.md, Troubleshooting №3) — намеренно. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts -- прод-фикс гонки initData */}
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
       </head>
       <body className="min-h-full flex flex-col">

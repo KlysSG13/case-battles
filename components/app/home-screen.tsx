@@ -1,63 +1,44 @@
 "use client";
 
-import { BatteryCharging, ChevronRight, Flame, Swords, Zap } from "lucide-react";
+import { ChevronRight, Flame, Play, Plus, Swords, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Bootstrap, ModeInfo } from "@/lib/client";
+import type { Bootstrap } from "@/lib/client";
 import { haptic } from "@/lib/client";
-import { cn } from "@/lib/utils";
 
 interface HomeScreenProps {
   data: Bootstrap | null;
   loading: boolean;
   error: string | null;
   onRetry: () => void;
-  onOpenCase: (caseId: number) => void;
-  onOpenMode: (mode: ModeInfo) => void;
-  onOpenDuels: () => void;
-  onOpenRewards: () => void;
+  onContinue: () => void;
+  onNewRun: () => void;
+  onDuels: () => void;
   startingMode: string | null;
 }
 
-function DifficultyDots({ level }: { level: number }) {
-  return (
-    <span className="inline-flex items-center gap-0.5" aria-label={`Сложность ${level} из 3`}>
-      {[1, 2, 3].map((i) => (
-        <span
-          key={i}
-          className={cn(
-            "h-1.5 w-1.5 rounded-full",
-            i <= level ? "bg-magenta shadow-[0_0_6px_rgba(255,45,120,0.8)]" : "bg-white/15"
-          )}
-        />
-      ))}
-    </span>
-  );
-}
-
+/**
+ * Хаб: максимум 3 первичных действия — продолжить / новый заход / дуэли.
+ * Серия и уровень — компактная строка статуса; всё второстепенное — в профиле.
+ */
 export function HomeScreen({
   data,
   loading,
   error,
   onRetry,
-  onOpenCase,
-  onOpenMode,
-  onOpenDuels,
-  onOpenRewards,
+  onContinue,
+  onNewRun,
+  onDuels,
   startingMode,
 }: HomeScreenProps) {
   if (loading && !data) {
     return (
       <div className="space-y-4 p-4">
-        <Skeleton className="h-16 w-64" />
+        <Skeleton className="h-14 w-56" />
         <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-32 w-full" />
-        <div className="grid grid-cols-2 gap-3">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-        </div>
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-14 w-full" />
       </div>
     );
   }
@@ -77,177 +58,119 @@ export function HomeScreen({
   }
 
   if (!data) return null;
-  const { profile, modes, dailyCase, quota } = data;
-  const league = profile.league;
+  const { profile, dailyCase, quota } = data;
 
   return (
-    <div className="animate-rise space-y-4 p-4 pb-6">
-      <header className="flex items-end justify-between pt-2">
+    <div className="animate-rise space-y-5 p-4 pb-6">
+      <header className="flex items-end justify-between pt-3">
         <div>
           <p className="font-display text-[11px] tracking-[0.25em] text-dim">КЕЙС-БАТТЛЫ</p>
           <h1 className="font-display text-xl font-bold text-fog">
             Привет, <span className="text-neon text-glow">{profile.firstName}</span>
           </h1>
         </div>
-        {quota.limit !== null && (
-          <div className="rounded-lg border border-line bg-panel px-2.5 py-1.5 text-right">
-            <p className="font-display text-[9px] tracking-wider text-dim">РАУНДОВ СЕГОДНЯ</p>
-            <p className="font-display text-sm font-bold text-neon">{quota.remaining}/3</p>
-          </div>
-        )}
+        <div className="flex items-center gap-3 text-dim">
+          <span className="flex items-center gap-1 font-display text-[12px]" title="Серия дней">
+            <Flame className="h-3.5 w-3.5 text-magenta" />
+            {profile.streakCurrent}
+          </span>
+          <span className="flex items-center gap-1 font-display text-[12px]" title={`Лига ${profile.league.title}`}>
+            {profile.league.emoji}
+            {profile.rating}
+          </span>
+        </div>
       </header>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="glow-magenta border-magenta/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-magenta">
-              <Flame className="h-4 w-4" />
-              <span className="font-display text-[10px] tracking-widest">СЕРИЯ</span>
-            </div>
-            <p className="mt-2 font-display text-2xl font-bold text-fog">
-              {profile.streakCurrent} <span className="text-sm text-dim">дн.</span>
-            </p>
-            <p className="mt-1 text-[11px] text-dim">рекорд: {profile.streakBest} дн.</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glow-soft">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-neon">
-              <Zap className="h-4 w-4" />
-              <span className="font-display text-[10px] tracking-widest">УРОВЕНЬ {profile.progress.level}</span>
-            </div>
-            <p className="mt-2 font-display text-2xl font-bold text-fog">
-              {profile.xpTotal} <span className="text-sm text-dim">XP</span>
-            </p>
-            <div className="mt-2">
-              <Progress value={profile.progress.progressPct} />
-              <p className="mt-1 text-[10px] text-dim">
-                до ур. {profile.progress.level + 1}: {profile.progress.xpToNext} XP
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="rounded-xl bg-panel/50 px-4 py-3">
+        <div className="flex items-baseline justify-between">
+          <span className="font-display text-[11px] tracking-widest text-dim">
+            УРОВЕНЬ {profile.progress.level}
+          </span>
+          <span className="font-display text-[11px] text-dim">
+            {profile.xpTotal} XP · ещё {profile.progress.xpToNext}
+          </span>
+        </div>
+        <div className="mt-2">
+          <Progress value={profile.progress.progressPct} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <button onClick={() => { haptic("light"); onOpenDuels(); }} className="text-left active:scale-[0.99]">
-          <Card className="h-full border-line">
-            <CardContent className="flex items-center gap-3 p-3.5">
-              <span className="text-xl">{league.emoji}</span>
-              <div className="min-w-0">
-                <p className="font-display text-[10px] tracking-widest text-dim">ЛИГА</p>
-                <p className="font-display text-sm font-bold" style={{ color: league.color }}>
-                  {league.title} · {profile.rating}
-                </p>
-                {league.next && (
-                  <p className="text-[10px] text-dim">до {league.next.title}: {league.next.min - profile.rating}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </button>
-
-        <button onClick={() => { haptic("light"); onOpenDuels(); }} className="text-left active:scale-[0.99]">
-          <Card className={cn("h-full", profile.mascot.sleeping ? "border-line" : "border-neon/30")}>
-            <CardContent className="flex items-center gap-3 p-3.5">
-              <BatteryCharging className={cn("h-6 w-6 shrink-0", profile.mascot.charge >= 60 ? "text-neon" : profile.mascot.sleeping ? "text-dim" : "text-amber-400")} />
-              <div className="min-w-0 flex-1">
-                <p className="font-display text-[10px] tracking-widest text-dim">СИНТ-ДРОН</p>
-                <p className={cn("font-display text-sm font-bold", profile.mascot.sleeping ? "text-dim" : "text-fog")}>
-                  {profile.mascot.charge}% · {profile.mascot.label}
-                </p>
-                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className={cn("h-full rounded-full", profile.mascot.charge >= 60 ? "bg-neon" : profile.mascot.charge > 20 ? "bg-amber-400" : "bg-magenta")}
-                    style={{ width: `${profile.mascot.charge}%` }}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </button>
-      </div>
-
-      {dailyCase && (
+      {/* Три первичных действия */}
+      <div className="space-y-3">
         <button
-          className="w-full text-left"
+          className="block w-full text-left active:scale-[0.99]"
+          disabled={startingMode !== null}
           onClick={() => {
             haptic("light");
-            onOpenCase(dailyCase.id);
+            onContinue();
           }}
         >
-          <Card className="group border-neon/30 bg-gradient-to-br from-panel to-panel-2 glow-neon transition-transform active:scale-[0.99]">
+          <Card className="border-neon/30 bg-gradient-to-br from-panel to-panel-2 glow-neon">
             <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-neon/30 bg-neon/10 text-2xl">
-                {dailyCase.domainEmoji}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-display text-[10px] tracking-[0.2em] text-neon">КЕЙС ДНЯ · КЛАССИКА</p>
-                <p className="mt-0.5 truncate font-display text-sm font-semibold text-fog">
-                  {dailyCase.title}
-                </p>
-                <div className="mt-1.5 flex items-center gap-3">
-                  <span className="text-[11px] text-dim">{dailyCase.domainTitle}</span>
-                  <DifficultyDots level={dailyCase.difficulty} />
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 shrink-0 text-neon" />
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-neon/30 bg-neon/10 text-2xl">
+                {dailyCase?.domainEmoji ?? "📘"}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-display text-[10px] tracking-[0.2em] text-neon">
+                  ПРОДОЛЖИТЬ · КЕЙС ДНЯ
+                </span>
+                <span className="block truncate font-display text-sm font-semibold text-fog">
+                  {dailyCase?.title ?? "Классический кейс"}
+                </span>
+                {quota.limit !== null && (
+                  <span className="block text-[11px] text-dim">
+                    раундов сегодня: {quota.remaining}/3
+                  </span>
+                )}
+              </span>
+              <Play className="h-5 w-5 shrink-0 text-neon" />
             </CardContent>
           </Card>
         </button>
-      )}
 
-      <section>
-        <h2 className="mb-2.5 font-display text-[11px] tracking-[0.25em] text-dim">РЕЖИМЫ</h2>
         <div className="grid grid-cols-2 gap-3">
-          {modes.map((m) => (
-            <button
-              key={m.slug}
-              disabled={startingMode !== null}
-              onClick={() => {
-                haptic("light");
-                onOpenMode(m);
-              }}
-              className={cn(
-                "rounded-xl border border-line bg-panel/70 p-3 text-left transition-all active:scale-95",
-                startingMode === m.slug && "border-neon/60 glow-neon",
-                startingMode !== null && startingMode !== m.slug && "opacity-50"
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-2xl">{m.emoji}</span>
-                <span className="font-display text-[10px] text-dim">{Math.round(m.baseTimeLimitSec / 60)} мин</span>
-              </div>
-              <p className="mt-2 font-display text-[12px] font-bold text-fog">{m.title}</p>
-              <p className="mt-0.5 text-[10px] leading-tight text-dim">{m.short}</p>
-            </button>
-          ))}
           <button
+            className="active:scale-[0.98]"
+            disabled={startingMode !== null}
             onClick={() => {
               haptic("light");
-              onOpenDuels();
+              onNewRun();
             }}
-            className="rounded-xl border border-magenta/40 bg-magenta/8 p-3 text-left transition-all active:scale-95 glow-magenta"
           >
-            <div className="flex items-center justify-between">
-              <Swords className="h-6 w-6 text-magenta" />
-              <span className="font-display text-[10px] text-dim">PVP · AI</span>
-            </div>
-            <p className="mt-2 font-display text-[12px] font-bold text-fog">Дуэли</p>
-            <p className="mt-0.5 text-[10px] leading-tight text-dim">рейтинг, лиги, реванш</p>
+            <Card className="h-full">
+              <CardContent className="flex h-full flex-col gap-2 p-4">
+                <Plus className="h-5 w-5 text-fog" />
+                <span className="font-display text-[13px] font-bold leading-tight text-fog">
+                  Новый заход
+                </span>
+                <span className="text-[11px] leading-tight text-dim">сфера → режим → игра</span>
+              </CardContent>
+            </Card>
+          </button>
+          <button
+            className="active:scale-[0.98]"
+            disabled={startingMode !== null}
+            onClick={() => {
+              haptic("light");
+              onDuels();
+            }}
+          >
+            <Card className="h-full border-magenta/30">
+              <CardContent className="flex h-full flex-col gap-2 p-4">
+                <Swords className="h-5 w-5 text-magenta" />
+                <span className="font-display text-[13px] font-bold leading-tight text-fog">Дуэли</span>
+                <span className="text-[11px] leading-tight text-dim">ИИ или друг · рейтинг</span>
+              </CardContent>
+            </Card>
           </button>
         </div>
-      </section>
-
-      <div className="flex items-center justify-between px-1">
-        <p className="text-[11px] text-dim">3 бесплатных раунда в сутки · оценка ИИ по рубрике</p>
-        {profile.rewardsUnlocked && (
-          <button onClick={onOpenRewards} className="shrink-0 text-[11px] text-neon">
-            🎁 награды
-          </button>
-        )}
       </div>
+
+      <p className="flex items-center justify-center gap-1.5 text-center text-[11px] text-dim">
+        <Zap className="h-3 w-3" />
+        оценка ИИ по рубрике · дрон и бейджи — в профиле
+        <ChevronRight className="h-3 w-3" />
+      </p>
     </div>
   );
 }

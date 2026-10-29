@@ -5,6 +5,7 @@ import { ArrowLeft, Flag, Send } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressRing, formatClock } from "@/components/app/rings";
+import { Stepper } from "@/components/app/stepper";
 import type { RoundStart } from "@/lib/client";
 import { haptic } from "@/lib/client";
 import { cn } from "@/lib/utils";
@@ -110,33 +111,38 @@ export function RoundScreen({
 
   return (
     <div className="animate-rise flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-ink/90 px-4 py-3 backdrop-blur-md">
-        <button
-          onClick={onBack}
-          aria-label="Назад"
-          className="rounded-lg p-1.5 text-dim transition-colors hover:bg-white/5 hover:text-fog"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div className="min-w-0 flex-1">
-          <p className="font-display text-[10px] tracking-[0.2em] text-dim">
-            {round.modeTitle.toUpperCase()} · {DIFF_LABEL[round.difficulty]?.toUpperCase()}
-            {maxAttempts > 1 && ` · ПОПЫТКА ${attemptNo}/${maxAttempts}`}
-          </p>
-          <h1 className="truncate font-display text-sm font-bold text-fog">
-            {isScenario ? round.scenario?.title : round.case?.title}
-          </h1>
+      <header className="sticky top-0 z-20 border-b border-line bg-ink/90 backdrop-blur-md">
+        <div className="flex items-center gap-2 px-4 pt-3">
+          <Stepper current={3} className="flex-1" />
+          <ProgressRing value={ringValue} size={44} stroke={4} color={ringColor}>
+            <span
+              className={cn(
+                "font-display text-[9px] font-bold",
+                timeUp ? "text-magenta" : "text-neon"
+              )}
+            >
+              {formatClock(remaining)}
+            </span>
+          </ProgressRing>
         </div>
-        <ProgressRing value={ringValue} size={52} stroke={4} color={ringColor}>
-          <span
-            className={cn(
-              "font-display text-[10px] font-bold",
-              timeUp ? "text-magenta" : "text-neon"
-            )}
+        <div className="flex items-center gap-3 px-4 py-2.5">
+          <button
+            onClick={onBack}
+            aria-label="Назад"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-dim transition-colors hover:bg-white/5 hover:text-fog"
           >
-            {formatClock(remaining)}
-          </span>
-        </ProgressRing>
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-[10px] tracking-[0.2em] text-dim">
+              {round.modeTitle.toUpperCase()} · {DIFF_LABEL[round.difficulty]?.toUpperCase()}
+              {maxAttempts > 1 && ` · ПОПЫТКА ${attemptNo}/${maxAttempts}`}
+            </p>
+            <h1 className="truncate font-display text-sm font-bold text-fog">
+              {isScenario ? round.scenario?.title : round.case?.title}
+            </h1>
+          </div>
+        </div>
       </header>
 
       <div className="flex-1 space-y-4 p-4 pb-40">

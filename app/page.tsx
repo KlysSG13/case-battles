@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BottomNav, type Screen } from "@/components/app/bottom-nav";
 import { HomeScreen } from "@/components/app/home-screen";
-import { ModeSetupScreen } from "@/components/app/mode-setup-screen";
+import { SphereScreen } from "@/components/app/sphere-screen";
+import { ModeScreen } from "@/components/app/mode-screen";
 import { RoundScreen } from "@/components/app/round-screen";
 import { ResultScreen, type ResultPayload } from "@/components/app/result-screen";
 import { DuelLobbyScreen, AiDuelSetupScreen, DuelScreen } from "@/components/app/duel-screens";
@@ -20,17 +21,10 @@ import {
   UnauthorizedError,
   type Bootstrap,
   type CaseData,
-  type ModeInfo,
   type RoundStart,
 } from "@/lib/client";
 
 type Phase = "boot" | "noauth" | "ready";
-
-interface SetupParams {
-  domainId: number;
-  difficulty: "easy" | "normal" | "hard";
-  attempts: number;
-}
 
 export default function Page() {
   const [phase, setPhase] = useState<Phase>("boot");
@@ -39,7 +33,8 @@ export default function Page() {
   const [bootLoading, setBootLoading] = useState(true);
   const [bootError, setBootError] = useState<string | null>(null);
 
-  const [setupMode, setSetupMode] = useState<ModeInfo | null>(null);
+  // визард: Сфера (шаг 1) -> Режим (шаг 2) -> Игра (шаг 3)
+  const [wizardDomainId, setWizardDomainId] = useState<number | null>(null);
   const [startingMode, setStartingMode] = useState<string | null>(null);
   const [round, setRound] = useState<RoundStart | null>(null);
   const [roundAttemptNo, setRoundAttemptNo] = useState(1);
@@ -110,18 +105,19 @@ export default function Page() {
 
   const openHome = useCallback(() => {
     setScreen("home");
+    setWizardDomainId(null);
     loadBootstrap();
   }, [loadBootstrap]);
 
   // ---- Раунды ----
   const startRound = useCallback(
-    async (opts: SetupParams & { caseId?: number; mode?: string }) => {
-      setStartingMode(opts.mode ?? setupMode?.slug ?? null);
+    async (opts: { mode: string; domainId: number; difficulty: string; attempts: number; caseId?: number }) => {
+      setStartingMode(opts.mode);
       try {
         const res = await apiFetch<RoundStart>("/api/app/round/start", {
           method: "POST",
           body: JSON.stringify({
-            mode: opts.mode ?? setupMode?.slug ?? "classic",
+            mode: opts.mode,
             domainId: opts.domainId,
             difficulty: opts.difficulty,
             attempts: opts.attempts,
@@ -140,22 +136,20 @@ export default function Page() {
         setStartingMode(null);
       }
     },
-    [setupMode, showToast]
+    [showToast]
   );
 
-  const openCase = useCallback(
-    (caseId: number, domainId?: number) => {
-      // «кейс дня» — классика на конкретном кейсе
-      startRound({
-        mode: "classic",
-        domainId: domainId ?? boot?.domains[0]?.id ?? 1,
-        difficulty: "normal",
-        attempts: 1,
-        caseId,
-      });
-    },
-    [startRound, boot]
-  );
+  const onContinue = useCallback(() => {
+    // «Продолжить»: кейс дня (классика) на кейсе выбранной сферы
+    const dc = boot?.dailyCase;
+    startRound({
+      mode: "classic",
+      domainId: dc?.domainId ?? boot?.domains[0]?.id ?? 1,
+      difficulty: "normal",
+      attempts: 1,
+      caseId: dc?.id,
+    });
+  }, [boot, startRound]);
 
   const onRoundSubmit = useCallback(
     (submit: { roundId: string; answer: string }) => {
@@ -249,27 +243,33 @@ export default function Page() {
           loading={bootLoading}
           error={bootError}
           onRetry={loadBootstrap}
-          onOpenCase={(caseId) => {
-            const domainId = boot?.dailyCase?.id === caseId ? boot.dailyCase.domainId : undefined;
-            openCase(caseId, domainId);
-          }}
-          onOpenMode={(mode) => {
-            setSetupMode(mode);
-            setScreen("setup");
-          }}
-          onOpenDuels={() => setScreen("lobby")}
-          onOpenRewards={() => setScreen("rewards")}
+          onContinue={onContinue}
+          onNewRun={() => setScreen("sphere")}
+          onDuels={() => setScreen("lobby")}
           startingMode={startingMode}
         />
       )}
 
-      {screen === "setup" && setupMode && boot && (
-        <ModeSetupScreen
-          mode={setupMode}
+      {screen === "sphere" && boot && (
+        <SphereScreen
+          domains={boot.domains}
+          onBack={openHome}
+          onPick={(domainId) => {
+            setWizardDomainId(domainId);
+            setScreen("mode");
+          }}
+        />
+      )}
+
+      {screen === "mode" && boot && wizardDomainId !== null && (
+        <ModeScreen
           bootstrap={boot}
-          onBack={() => setScreen("home")}
-          onStart={(opts) => startRound(opts)}
-          loading={startingMode !== null}
+          domainId={wizardDomainId}
+          onBack={() => setScreen("sphere")}
+          onStart={(opts) =>
+            startRound({ ...opts, domainId: wizardDomainId })
+          }
+          loadingMode={startingMode}
         />
       )}
 

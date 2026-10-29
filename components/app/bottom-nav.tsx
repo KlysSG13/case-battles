@@ -6,7 +6,8 @@ import { haptic } from "@/lib/client";
 
 export type Screen =
   | "home"
-  | "setup"
+  | "sphere"
+  | "mode"
   | "round"
   | "result"
   | "lobby"
