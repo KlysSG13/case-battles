@@ -81,7 +81,8 @@ async function main(): Promise<void> {
   const setWebhook = await tgApi("setWebhook", {
     url: webhookUrl,
     secret_token: WEBHOOK_SECRET || undefined,
-    allowed_updates: ["message"],
+    // callback_query нужен для inline-кнопок; без него нажатия до бота не доходят
+    allowed_updates: ["message", "callback_query"],
     drop_pending_updates: true,
   });
   if (!setWebhook.ok) {
@@ -104,6 +105,23 @@ async function main(): Promise<void> {
   console.log(`✅ Бот «${me.result?.first_name ?? username}» (@${username}) подключён`);
   console.log(`✅ Webhook: ${webhookUrl} (установлен)`);
   console.log(`✅ Команды меню: ${setCommands.ok ? "заданы (/start, /app, /modes, /duel, /profile, /leaderboard)" : "ошибка"}`);
+
+  const info = await tgApi("getWebhookInfo", {});
+  if (info.ok) {
+    const r = info.result as {
+      url?: string;
+      allowed_updates?: string[];
+      pending_update_count?: number;
+      last_error_message?: string;
+    };
+    console.log(`✅ getWebhookInfo:`);
+    console.log(`   url: ${r.url}`);
+    console.log(`   allowed_updates: ${(r.allowed_updates ?? []).join(", ") || "все"}`);
+    if (r.pending_update_count) console.log(`   pending_updates: ${r.pending_update_count}`);
+    if (r.last_error_message) console.log(`   ⚠️ last_error: ${r.last_error_message}`);
+    const allowedOk = (r.allowed_updates ?? []).includes("message") && (r.allowed_updates ?? []).includes("callback_query");
+    console.log(allowedOk ? "   ✓ message + callback_query зарегистрированы" : "   ⚠️ callback_query отсутствует — перезапустите скрипт");
+  }
   if (APP_SHORT_NAME) {
     console.log(`✅ Прямая ссылка на Mini App: https://t.me/${username}/${APP_SHORT_NAME}`);
   } else {
