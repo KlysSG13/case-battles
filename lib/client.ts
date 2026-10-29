@@ -119,6 +119,8 @@ export interface Profile {
   streakCurrent: number;
   streakBest: number;
   isPro: boolean;
+  proUntil: string | null;
+  hintsBalance: number;
   profilePublic: boolean;
   rating: number;
   league: {

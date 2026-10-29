@@ -13,6 +13,7 @@
     "pg:migrate": "npm run pg:schema && prisma migrate dev --schema=prisma/schema.postgres.prisma",
     "pg:prepare": "npm run pg:schema && prisma generate --schema=prisma/schema.postgres.prisma && prisma migrate deploy --schema=prisma/schema.postgres.prisma && npm run db:seed",
     "tg:webhook": "tsx scripts/tg-webhook.ts",
+    "stars:refund": "tsx scripts/stars-refund.ts",
     "deploy-check": "tsx scripts/deploy-check.ts",
     "selfcheck": "tsx scripts/selfcheck.ts",
     "selfcheck:modes": "tsx scripts/selfcheck-modes.ts",

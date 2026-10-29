@@ -82,7 +82,7 @@ async function main(): Promise<void> {
     url: webhookUrl,
     secret_token: WEBHOOK_SECRET || undefined,
     // callback_query нужен для inline-кнопок; без него нажатия до бота не доходят
-    allowed_updates: ["message", "callback_query"],
+    allowed_updates: ["message", "callback_query", "pre_checkout_query"],
     drop_pending_updates: true,
   });
   if (!setWebhook.ok) {
@@ -96,6 +96,7 @@ async function main(): Promise<void> {
       { command: "app", description: "Открыть Mini App" },
       { command: "modes", description: "Режимы игры" },
       { command: "duel", description: "Дуэли и рейтинг" },
+      { command: "pro", description: "PRO-подписка (Stars)" },
       { command: "profile", description: "Профиль и статистика" },
       { command: "leaderboard", description: "Топ недели" },
     ],
@@ -104,7 +105,7 @@ async function main(): Promise<void> {
   const username = me.result?.username ?? "?";
   console.log(`✅ Бот «${me.result?.first_name ?? username}» (@${username}) подключён`);
   console.log(`✅ Webhook: ${webhookUrl} (установлен)`);
-  console.log(`✅ Команды меню: ${setCommands.ok ? "заданы (/start, /app, /modes, /duel, /profile, /leaderboard)" : "ошибка"}`);
+  console.log(`✅ Команды меню: ${setCommands.ok ? "заданы (/start, /app, /modes, /duel, /pro, /profile, /leaderboard)" : "ошибка"}`);
 
   const info = await tgApi("getWebhookInfo", {});
   if (info.ok) {
@@ -119,8 +120,15 @@ async function main(): Promise<void> {
     console.log(`   allowed_updates: ${(r.allowed_updates ?? []).join(", ") || "все"}`);
     if (r.pending_update_count) console.log(`   pending_updates: ${r.pending_update_count}`);
     if (r.last_error_message) console.log(`   ⚠️ last_error: ${r.last_error_message}`);
-    const allowedOk = (r.allowed_updates ?? []).includes("message") && (r.allowed_updates ?? []).includes("callback_query");
-    console.log(allowedOk ? "   ✓ message + callback_query зарегистрированы" : "   ⚠️ callback_query отсутствует — перезапустите скрипт");
+    const allowedOk =
+      (r.allowed_updates ?? []).includes("message") &&
+      (r.allowed_updates ?? []).includes("callback_query") &&
+      (r.allowed_updates ?? []).includes("pre_checkout_query");
+    console.log(
+      allowedOk
+        ? "   ✓ message + callback_query + pre_checkout_query зарегистрированы"
+        : "   ⚠️ pre_checkout_query отсутствует — БЕЗ НЕГО ОПЛАТЫ STARS НЕ РАБОТАЮТ, перезапустите скрипт"
+    );
   }
   if (APP_SHORT_NAME) {
     console.log(`✅ Прямая ссылка на Mini App: https://t.me/${username}/${APP_SHORT_NAME}`);

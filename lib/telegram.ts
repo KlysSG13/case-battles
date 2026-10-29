@@ -2,6 +2,7 @@ import { prisma } from "./prisma";
 import { getLeaderboard } from "./leaderboard";
 import { levelProgress } from "./levels";
 import { mskWeekStartUtc } from "./msk";
+import { findSku } from "./catalog";
 
 const API_BASE = "https://api.telegram.org";
 
@@ -163,6 +164,61 @@ export async function sendDuelLobby(chatId: number): Promise<void> {
       `ссылка на дуэль шарится прямо в чат. Победы двигают рейтинг и лиги.\n${lobbyLine}`,
     reply_markup: await appKeyboard(),
   });
+}
+
+/** /pro — инвойс PRO-подписки прямо в чат (кнопка со ссылкой на оплату Stars). */
+export async function sendPro(chatId: number): Promise<void> {
+  const token = process.env.BOT_TOKEN ?? "";
+  const item = findSku("pro30");
+  if (!token || !item) {
+    await tgApi("sendMessage", {
+      chat_id: chatId,
+      parse_mode: "HTML",
+      text: "💎 <b>PRO</b> — безлимит раундов, 3 подсказки в день, PRO-скин дрона.\nОформление — в Mini App (профиль → PRO).",
+      reply_markup: await appKeyboard(),
+    });
+    return;
+  }
+  try {
+    // в приватном чате chatId == telegramId: payload вида <sku>:<userId>
+    const res = await fetch(`https://api.telegram.org/bot${token}/createInvoiceLink`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        title: item.title,
+        description: item.description,
+        payload: `pro30:${chatId}`,
+        provider_token: "",
+        currency: "XTR",
+        prices: [{ label: item.title, amount: item.stars }],
+      }),
+    });
+    const data = (await res.json()) as { ok?: boolean; result?: string };
+    if (data?.ok && data.result) {
+      await tgApi("sendMessage", {
+        chat_id: chatId,
+        parse_mode: "HTML",
+        text:
+          "💎 <b>PRO-подписка на 30 дней</b>\n\n" +
+          "• Безлимит раундов (free — 3 в сутки)\n" +
+          "• 3 подсказки в день вместо 1\n" +
+          "• PRO-скин дрона и бейдж в рейтингах\n\n" +
+          `Оплата Telegram Stars: ${item.stars} ⭐`,
+        reply_markup: {
+          inline_keyboard: [[{ text: `💎 Оформить · ${item.stars} ⭐`, url: data.result }]],
+        },
+      });
+      return;
+    }
+    throw new Error("no link");
+  } catch {
+    await tgApi("sendMessage", {
+      chat_id: chatId,
+      parse_mode: "HTML",
+      text: "💎 PRO пока недоступен для покупки — попробуйте позже из Mini App (профиль → PRO).",
+      reply_markup: await appKeyboard(),
+    });
+  }
 }
 
 /** Отправка напоминания о серии (не более 1 в сутки — дедуп через ReminderLog). */
