@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { INK } from "@/lib/design-tokens";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#0a0e17",
+  themeColor: INK,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

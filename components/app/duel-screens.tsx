@@ -14,6 +14,7 @@ import {
   type DuelState,
 } from "@/lib/client";
 import { cn } from "@/lib/utils";
+import { PERCENT_COLORS } from "@/lib/design-tokens";
 
 type Difficulty = "easy" | "normal" | "hard";
 
@@ -459,7 +460,7 @@ export function DuelScreen({ duelId, onBack, onRematch, showToast }: DuelScreenP
                 <p className="truncate text-center font-display text-[11px] font-semibold text-dim">
                   {side.isMe ? "ВЫ" : side.name}
                 </p>
-                <ProgressRing value={side.percent} size={90} stroke={7} color={side.isMe ? "#00f0ff" : "#ff2d78"}>
+                <ProgressRing value={side.percent} size={90} stroke={7} color={side.isMe ? PERCENT_COLORS.good : PERCENT_COLORS.bad}>
                   <span className="font-display text-xl font-bold text-fog">{side.percent}</span>
                 </ProgressRing>
                 {duel.status === "finished" && (
@@ -543,7 +544,7 @@ export function DuelScreen({ duelId, onBack, onRematch, showToast }: DuelScreenP
           value={(remaining / duel.timeLimitSec) * 100}
           size={52}
           stroke={4}
-          color={remaining < 60 ? "#ff2d78" : "#00f0ff"}
+          color={remaining < 60 ? PERCENT_COLORS.bad : PERCENT_COLORS.good}
         >
           <span className="font-display text-[10px] font-bold text-neon">
             {String(Math.floor(remaining / 60)).padStart(2, "0")}:{String(remaining % 60).padStart(2, "0")}

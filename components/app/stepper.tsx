@@ -22,7 +22,7 @@ export function Stepper({ current, className }: StepperProps) {
             <span
               className={cn(
                 "flex h-6 w-6 items-center justify-center rounded-md font-display text-[11px] font-bold transition-colors",
-                active && "border border-neon/60 bg-neon/15 text-neon shadow-[0_0_10px_rgba(0,240,255,0.25)]",
+                active && "border border-neon/60 bg-neon/15 text-neon glow-chip",
                 done && "border border-neon/30 bg-transparent text-neon/70",
                 !active && !done && "border border-line text-dim/60"
               )}

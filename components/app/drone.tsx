@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { PERCENT_COLORS } from "@/lib/design-tokens";
 
 type DroneState = "idle" | "happy" | "sleep";
 
@@ -14,7 +15,7 @@ interface DroneProps {
 
 function coreColor(charge: number): string {
   if (charge >= 60) return "var(--color-neon)";
-  if (charge >= 25) return "#ffb020";
+  if (charge >= 25) return PERCENT_COLORS.mid;
   return "var(--color-magenta)";
 }
 

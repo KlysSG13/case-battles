@@ -88,6 +88,10 @@ body {
     inset 0 0 12px rgba(0, 240, 255, 0.05);
 }
 
+.glow-chip {
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+}
+
 .glow-soft {
   box-shadow: 0 0 30px rgba(0, 240, 255, 0.09);
 }

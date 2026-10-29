@@ -8,7 +8,7 @@ import { ProgressRing, formatClock } from "@/components/app/rings";
 import { Stepper } from "@/components/app/stepper";
 import { TaskContent } from "@/components/app/task-content";
 import { SphereGlyph } from "@/components/app/sphere-glyph";
-import { sphereMeta } from "@/lib/design-tokens";
+import { sphereMeta, PERCENT_COLORS } from "@/lib/design-tokens";
 import type { RoundStart } from "@/lib/client";
 import { haptic } from "@/lib/client";
 import { cn } from "@/lib/utils";
@@ -123,7 +123,7 @@ export function RoundScreen({
   const len = answer.length;
   const canSubmit = len >= round.answerMin;
   const ringValue = (remaining / round.timeLimitSec) * 100;
-  const ringColor = timeUp || remaining < 60 ? "#ff2d78" : "#00f0ff";
+  const ringColor = timeUp || remaining < 60 ? PERCENT_COLORS.bad : PERCENT_COLORS.good;
   const isScenario = !!round.scenario;
   const isTask = !!round.task;
 

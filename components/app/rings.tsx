@@ -1,5 +1,7 @@
 "use client";
 
+import { NEON } from "@/lib/design-tokens";
+
 import { cn } from "@/lib/utils";
 
 interface RingProps {
@@ -16,7 +18,7 @@ export function ProgressRing({
   value,
   size = 120,
   stroke = 8,
-  color = "#00f0ff",
+  color = NEON.primary,
   trackColor = "rgba(255,255,255,0.08)",
   className,
   children,

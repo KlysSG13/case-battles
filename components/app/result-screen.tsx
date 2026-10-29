@@ -9,6 +9,7 @@ import { ProgressRing } from "@/components/app/rings";
 import { Drone } from "@/components/app/drone";
 import { apiFetch, haptic, type AttemptResult, type CompletedAttempt } from "@/lib/client";
 import { cn } from "@/lib/utils";
+import { percentColor as tokenPercentColor, NEON } from "@/lib/design-tokens";
 
 const POLL_INTERVAL_MS = 2000;
 const OVERALL_TIMEOUT_MS = 70_000;
@@ -38,11 +39,7 @@ type Phase =
   | { kind: "failed" }
   | { kind: "done"; result: CompletedAttempt };
 
-function percentColor(percent: number): string {
-  if (percent >= 70) return "#00f0ff";
-  if (percent >= 40) return "#ffb020";
-  return "#ff2d78";
-}
+const percentColor = tokenPercentColor;
 
 export function ResultScreen({
   payload,
@@ -125,7 +122,7 @@ export function ResultScreen({
   if (phase.kind === "evaluating") {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-6 p-8">
-        <ProgressRing value={0} size={110} stroke={7} color="#00f0ff">
+        <ProgressRing value={0} size={110} stroke={7} color={NEON.primary}>
           <span className="animate-pulse-soft font-display text-xs tracking-widest text-neon">AI</span>
         </ProgressRing>
         <div className="text-center">

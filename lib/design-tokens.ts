@@ -43,6 +43,13 @@ export const LEAGUE_COLORS: Record<string, string> = {
 };
 
 // Шкала процентов: везде одинаковая (результат, профиль, лидерборд, дуэли)
+export const INK = "#0a0e17";
+
+export const NEON = {
+  primary: "#00f0ff",
+  secondary: "#ff2d78",
+} as const;
+
 export const PERCENT_COLORS = {
   good: "#00f0ff",
   mid: "#ffb020",
