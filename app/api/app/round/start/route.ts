@@ -11,6 +11,7 @@ import {
   timeLimitFor,
 } from "@/lib/modes";
 import { generateScenario, toPublicScenario } from "@/lib/scenario";
+import { coreCasesForDomain } from "@/lib/content/core";
 import { completedRoundsToday } from "@/lib/rounds";
 import { FREE_DAILY_LIMIT, DAILY_RATE_LIMIT } from "@/lib/gamification";
 import { mskDayStartUtc } from "@/lib/msk";
@@ -93,8 +94,51 @@ export async function POST(req: NextRequest) {
     body: string;
     domain: { id: number; slug: string; title: string; emoji: string };
   } | null = null;
+  // core-режимы (лёгкая подача): задача из core-банка в блоках
+  let taskPayload: {
+    title: string;
+    blocks: unknown[];
+    domainSlug: string;
+    domainTitle: string;
+    domainEmoji: string;
+  } | null = null;
 
-  if (config.allowsScenario) {
+  if (config.tier === "core" && !config.allowsScenario) {
+    // Спасение/Питч: одношаговый лёгкий кейс выбранной сферы (банк в коде)
+    const pool = coreCasesForDomain(domain.slug);
+    if (pool.length > 0) {
+      const solvedCore = await prisma.attempt.findMany({
+        where: { userId: user.id, status: "completed", mode },
+        select: { scenarioJson: true },
+        take: 50,
+      });
+      const solvedSlugs = new Set(
+        solvedCore
+          .map((a) => {
+            try {
+              const parsed = JSON.parse(a.scenarioJson ?? "{}") as { coreCase?: { slug?: string } };
+              return parsed.coreCase?.slug;
+            } catch {
+              return undefined;
+            }
+          })
+          .filter((x): x is string => !!x)
+      );
+      const fresh = pool.filter((c) => !solvedSlugs.has(c.slug));
+      const source = fresh.length > 0 ? fresh : pool;
+      const core = source[Math.floor(Math.random() * source.length)];
+      scenarioJson = JSON.stringify({ coreCase: core });
+      taskPayload = {
+        title: core.title,
+        blocks: core.blocks,
+        domainSlug: domain.slug,
+        domainTitle: domain.title,
+        domainEmoji: domain.emoji,
+      };
+    }
+  }
+
+  if (config.allowsScenario && !taskPayload) {
     const outcome = await generateScenario(mode as "constructor" | "rescue", domain.title, async () => {
       const candidates = await prisma.case.findMany({
         where: { domainId: domain!.id, isActive: true },
@@ -124,8 +168,8 @@ export async function POST(req: NextRequest) {
         };
       }
     }
-  } else {
-    // классика/питч: конкретный кейс (оверрайд, например «кейс дня») или
+  } else if (!taskPayload) {
+    // классика (hard-банк из БД): конкретный кейс (оверрайд, например «кейс дня») или
     // наименее решённый нерешённый активный кейс домена
     let nextId: number | null = null;
     if (Number.isInteger(body.caseId)) {
@@ -202,8 +246,10 @@ export async function POST(req: NextRequest) {
     timeLimitSec: timeLimitFor(mode, difficulty),
     answerMin: config.answerMin,
     answerMax: config.answerMax,
+    modeHint: config.hint,
+    task: taskPayload,
     scenario: scenarioPublic,
-    scenarioFallback: !scenarioPublic && config.allowsScenario,
+    scenarioFallback: !scenarioPublic && !taskPayload && config.allowsScenario,
     case: casePayload,
   });
 }

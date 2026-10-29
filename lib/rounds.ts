@@ -74,10 +74,37 @@ export type CompleteResult =
 export async function completeAttempt(args: CompleteAttemptArgs): Promise<CompleteResult> {
   const { user, attemptId, caseRow, scenario, answer, timeSpentSec, mode, difficulty } = args;
 
-  const caseTitle = scenario?.title ?? caseRow?.title ?? "Раунд";
-  const caseBody = scenario
-    ? (await import("./scenario")).scenarioToCaseText(scenario)
-    : (caseRow?.body ?? "");
+  // core-кейс хранится в scenarioJson под ключом coreCase (лёгкие режимы)
+  let coreCase: { title: string; blocks: unknown[]; missedFactors: string[] } | null = null;
+  {
+    const raw = await prisma.attempt.findUnique({
+      where: { id: attemptId },
+      select: { scenarioJson: true },
+    });
+    if (raw?.scenarioJson) {
+      try {
+        const parsed = JSON.parse(raw.scenarioJson) as {
+          coreCase?: { title?: string; blocks?: unknown[]; missedFactors?: string[] };
+        };
+        if (parsed.coreCase?.title && Array.isArray(parsed.coreCase.blocks)) {
+          coreCase = {
+            title: parsed.coreCase.title,
+            blocks: parsed.coreCase.blocks,
+            missedFactors: parsed.coreCase.missedFactors ?? [],
+          };
+        }
+      } catch {
+        coreCase = null;
+      }
+    }
+  }
+
+  const caseTitle = coreCase?.title ?? scenario?.title ?? caseRow?.title ?? "Раунд";
+  const caseBody = coreCase
+    ? (await import("./task-blocks")).blocksToPlainText(coreCase.blocks as never[])
+    : scenario
+      ? (await import("./scenario")).scenarioToCaseText(scenario)
+      : (caseRow?.body ?? "");
   const criteria = await rubricInputs(mode, caseRow);
 
   const outcome = await evaluateAnswer({
@@ -87,7 +114,7 @@ export async function completeAttempt(args: CompleteAttemptArgs): Promise<Comple
     answer,
     timeSpentSec,
     modeContext: MODES[mode].promptContext || undefined,
-    missedFactors: scenario?.missedFactors,
+    missedFactors: coreCase?.missedFactors ?? scenario?.missedFactors,
   });
 
   if (!outcome.ok) {

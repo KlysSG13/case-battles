@@ -21,12 +21,14 @@ export interface ModeConfig {
   answerMin: number;
   answerMax: number;
   baseTimeLimitSec: number;
-  allowsScenario: boolean; // AI-генерация условий (конструктор/спасение)
+  allowsScenario: boolean; // AI-генерация условий (конструктор)
   needsCase: boolean; // статический кейс обязателен (классика/питч)
   allowsMultiAttempt: boolean; // «Три попытки»
   usesCaseRubric: boolean; // рубрика кейса из БД (только классика)
   rubric: RubricCriterion[]; // шаблон рубрики режима
   promptContext: string; // дополнение к системному промпту оценщика
+  tier: "hard" | "core"; // hard: классика/дуэли (банк не меняем); core: лёгкая подача
+  hint: string; // подсказка по механике режима на экране раунда
 }
 
 const rubric = (
@@ -50,6 +52,8 @@ export const MODES: Record<Mode, ModeConfig> = {
     usesCaseRubric: true,
     rubric: [], // рубрика кейса из БД
     promptContext: "",
+    tier: "hard",
+    hint: "Разбери кейс по рубрике: структура, цифры, риски, шаги.",
   },
   constructor: {
     slug: "constructor",
@@ -74,6 +78,8 @@ export const MODES: Record<Mode, ModeConfig> = {
     ]),
     promptContext:
       "Это режим «Конструктор бизнеса»: игроку выданы стартовые условия и 3 обязательных правила — оценивай, насколько бизнес реально собирается из этих ресурсов.",
+    tier: "core",
+    hint: "Идея в 1 шаг: что продаёшь, кому и за сколько. Три правила сверху обязательны.",
   },
   rescue: {
     slug: "rescue",
@@ -84,7 +90,7 @@ export const MODES: Record<Mode, ModeConfig> = {
     answerMin: 300,
     answerMax: 1500,
     baseTimeLimitSec: 360,
-    allowsScenario: true,
+    allowsScenario: false, // core-подача: лёгкий кейс из core-банка (не генератор)
     needsCase: false,
     allowsMultiAttempt: true,
     usesCaseRubric: false,
@@ -96,6 +102,8 @@ export const MODES: Record<Mode, ModeConfig> = {
     ]),
     promptContext:
       "Это режим «Спасение»: кейс описывает кризис — оценивай ответ как план спасения бизнеса.",
+    tier: "core",
+    hint: "Один решающий шаг: что сделаешь ПЕРВЫМ, чтобы остановить проблему.",
   },
   pitch: {
     slug: "pitch",
@@ -118,6 +126,8 @@ export const MODES: Record<Mode, ModeConfig> = {
     ]),
     promptContext:
       "Это режим «Питч инвестору»: ответ должен быть питчем по структуре «крючок → проблема → решение → рынок/цифры → ask (что просишь)».",
+    tier: "core",
+    hint: "5 строк по порядку: крючок → проблема → решение → цифра → что просишь.",
   },
 };
 

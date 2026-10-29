@@ -199,6 +199,14 @@ export interface RoundStart {
   timeLimitSec: number;
   answerMin: number;
   answerMax: number;
+  modeHint?: string;
+  task: {
+    title: string;
+    blocks: unknown[];
+    domainSlug: string;
+    domainTitle: string;
+    domainEmoji: string;
+  } | null;
   scenario: ScenarioPublic | null;
   scenarioFallback: boolean;
   case: {

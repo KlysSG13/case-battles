@@ -109,6 +109,7 @@ export function RoundScreen({
   const ringValue = (remaining / round.timeLimitSec) * 100;
   const ringColor = timeUp || remaining < 60 ? "#ff2d78" : "#00f0ff";
   const isScenario = !!round.scenario;
+  const isTask = !!round.task;
 
   return (
     <div className="animate-rise flex min-h-dvh flex-col">
@@ -140,13 +141,18 @@ export function RoundScreen({
               {maxAttempts > 1 && ` · ПОПЫТКА ${attemptNo}/${maxAttempts}`}
             </p>
             <h1 className="truncate font-display text-sm font-bold text-fog">
-              {isScenario ? round.scenario?.title : round.case?.title}
+              {isScenario ? round.scenario?.title : isTask ? round.task?.title : round.case?.title}
             </h1>
           </div>
         </div>
       </header>
 
       <div className="flex-1 space-y-4 p-4 pb-40">
+        {round.modeHint && (
+          <div className="rounded-lg border border-neon/30 bg-neon/6 px-4 py-2.5 text-[12px] leading-relaxed text-neon/90">
+            💡 {round.modeHint}
+          </div>
+        )}
         {round.scenarioFallback && (
           <div className="rounded-lg border border-line bg-panel/60 px-4 py-2.5 text-[12px] text-dim">
             Сценарий сгенерировать не удалось — раунд идёт на статическом кейсе домена.
@@ -154,6 +160,11 @@ export function RoundScreen({
         )}
         {isScenario ? (
           <ScenarioBlock round={round} />
+        ) : isTask ? (
+          <TaskContent
+            body={JSON.stringify({ blocks: round.task?.blocks ?? [] })}
+            title={round.task?.title}
+          />
         ) : (
           <TaskContent body={round.case?.body ?? ""} title={round.case?.title} />
         )}
