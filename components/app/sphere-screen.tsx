@@ -3,6 +3,8 @@
 import { ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Stepper } from "@/components/app/stepper";
+import { SphereGlyph } from "@/components/app/sphere-glyph";
+import { sphereMeta } from "@/lib/design-tokens";
 import { haptic, type DomainInfo } from "@/lib/client";
 
 interface SphereScreenProps {
@@ -11,13 +13,7 @@ interface SphereScreenProps {
   onPick: (domainId: number) => void;
 }
 
-const SPHERE_DESCRIPTIONS: Record<string, string> = {
-  business: "деньги, команда, переговоры",
-  product: "продукт, метрики, эксперименты",
-  law: "договоры, риски, права",
-};
-
-/** Шаг 1 визарда: выбор сферы. */
+/** Шаг 1 визарда: выбор сферы (уникальный цвет + глиф + описание). */
 export function SphereScreen({ domains, onBack, onPick }: SphereScreenProps) {
   return (
     <div className="animate-rise min-h-dvh p-4 pb-8">
@@ -36,31 +32,39 @@ export function SphereScreen({ domains, onBack, onPick }: SphereScreenProps) {
       <p className="mt-1 text-[13px] text-dim">Откуда брать кейсы в этом заходе</p>
 
       <div className="mt-5 space-y-3">
-        {domains.map((d) => (
-          <button
-            key={d.id}
-            onClick={() => {
-              haptic("light");
-              onPick(d.id);
-            }}
-            className="block w-full text-left active:scale-[0.99]"
-          >
-            <Card>
-              <CardContent className="flex items-center gap-4 p-4">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-line bg-panel-2 text-2xl">
-                  {d.emoji}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-display text-base font-bold text-fog">{d.title}</p>
-                  <p className="text-[12px] text-dim">
-                    {SPHERE_DESCRIPTIONS[d.slug] ?? "кейсы и решения"}
-                  </p>
-                </div>
-                <span className="font-display text-sm text-dim/50">→</span>
-              </CardContent>
-            </Card>
-          </button>
-        ))}
+        {domains.map((d) => {
+          const meta = sphereMeta(d.slug);
+          return (
+            <button
+              key={d.id}
+              onClick={() => {
+                haptic("light");
+                onPick(d.id);
+              }}
+              className="block w-full text-left active:scale-[0.99]"
+            >
+              <Card style={{ borderColor: `${meta.color}55` }}>
+                <CardContent className="flex items-center gap-4 p-4">
+                  <span
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                    style={{ background: `${meta.color}14`, boxShadow: `0 0 14px ${meta.color}33` }}
+                  >
+                    <SphereGlyph slug={d.slug} color={meta.color} className="h-6 w-6" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display text-base font-bold" style={{ color: meta.color }}>
+                      {d.title}
+                    </p>
+                    <p className="text-[12px] text-dim">{meta.description}</p>
+                  </div>
+                  <span className="font-display text-sm opacity-40" style={{ color: meta.color }}>
+                    →
+                  </span>
+                </CardContent>
+              </Card>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 // Единый движок раунда: режим = источник кейса × формат ответа × рубрика × соперник.
 // Конфиг режима описывает всё; экраны универсальны.
 
+import { LEAGUE_COLORS } from "./design-tokens";
+
 export type Mode = "classic" | "constructor" | "rescue" | "pitch";
 export type Difficulty = "easy" | "normal" | "hard";
 export type RivalStyle = "analyst" | "hustler" | "systemizer";
@@ -160,15 +162,15 @@ export interface League {
   key: "bronze" | "silver" | "gold" | "platinum";
   title: string;
   min: number;
-  color: string; // точечные цвета лиг в неон-системе
+  color: string; // из единого модуля токенов (lib/design-tokens.ts)
   emoji: string;
 }
 
 export const LEAGUES: League[] = [
-  { key: "bronze", title: "Бронза", min: 0, color: "#cd7f32", emoji: "🥉" },
-  { key: "silver", title: "Серебро", min: 1100, color: "#c0c0c0", emoji: "🥈" },
-  { key: "gold", title: "Золото", min: 1300, color: "#ffd700", emoji: "🥇" },
-  { key: "platinum", title: "Платина", min: 1600, color: "#7df9ff", emoji: "💎" },
+  { key: "bronze", title: "Бронза", min: 0, color: LEAGUE_COLORS.bronze, emoji: "🥉" },
+  { key: "silver", title: "Серебро", min: 1100, color: LEAGUE_COLORS.silver, emoji: "🥈" },
+  { key: "gold", title: "Золото", min: 1300, color: LEAGUE_COLORS.gold, emoji: "🥇" },
+  { key: "platinum", title: "Платина", min: 1600, color: LEAGUE_COLORS.platinum, emoji: "💎" },
 ];
 
 export function leagueFor(rating: number): League {

@@ -247,6 +247,7 @@ export async function POST(req: NextRequest) {
     answerMin: config.answerMin,
     answerMax: config.answerMax,
     modeHint: config.hint,
+    domain: { slug: domain.slug, title: domain.title, emoji: domain.emoji },
     task: taskPayload,
     scenario: scenarioPublic,
     scenarioFallback: !scenarioPublic && !taskPayload && config.allowsScenario,

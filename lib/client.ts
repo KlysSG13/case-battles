@@ -200,6 +200,7 @@ export interface RoundStart {
   answerMin: number;
   answerMax: number;
   modeHint?: string;
+  domain?: { slug: string; title: string; emoji: string };
   task: {
     title: string;
     blocks: unknown[];

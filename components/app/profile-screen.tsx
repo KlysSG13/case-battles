@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Eye, EyeOff, Flame, Gift, Lock, Trophy, Zap } from "lucide-react";
 import { Drone } from "@/components/app/drone";
+import { SPHERES } from "@/lib/design-tokens";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,6 +41,7 @@ export function ProfileScreen({
   const [data, setData] = useState<MeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sphereFilter, setSphereFilter] = useState<string>("all");
 
   const fetchMe = useCallback(async (): Promise<MeData> => apiFetch<MeData>("/api/app/me"), []);
 
@@ -121,6 +123,10 @@ export function ProfileScreen({
   const { profile, badges, attempts, quota } = data;
   const earned = badges.filter((b) => b.earned);
   const locked = badges.filter((b) => !b.earned);
+  const visibleAttempts =
+    sphereFilter === "all"
+      ? attempts
+      : attempts.filter((a) => a.domainTitle === sphereFilter);
 
   return (
     <div className="animate-rise min-h-dvh space-y-4 p-4 pb-6">
@@ -311,15 +317,42 @@ export function ProfileScreen({
             <Trophy className="h-3 w-3" /> публичные ответы
           </button>
         </div>
-        {attempts.length === 0 ? (
+        {attempts.length > 0 && (
+          <div className="mb-2.5 flex gap-1.5">
+            {["all", ...SPHERES.map((s) => s.title)].map((f) => {
+              const meta = SPHERES.find((s) => s.title === f);
+              const active = sphereFilter === f;
+              return (
+                <button
+                  key={f}
+                  onClick={() => setSphereFilter(f)}
+                  className={cn(
+                    "rounded-lg border px-2.5 py-1.5 font-display text-[10px] font-semibold tracking-wider transition-colors",
+                    active && meta
+                      ? "text-fog"
+                      : active
+                        ? "border-neon/50 bg-neon/10 text-neon"
+                        : "border-line text-dim"
+                  )}
+                  style={active && meta ? { borderColor: `${meta.color}66`, background: `${meta.color}1a`, color: meta.color } : undefined}
+                >
+                  {f === "all" ? "ВСЕ" : meta?.title.toUpperCase()}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {visibleAttempts.length === 0 ? (
           <Card>
             <CardContent className="p-6 text-center text-[13px] text-dim">
-              Пока нет решённых раундов. Начните с кейса дня на главной!
+              {attempts.length === 0
+                ? "Пока нет решённых раундов. Начните с кейса дня на главной!"
+                : "В этой сфере пока нет раундов."}
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-2">
-            {attempts.map((a) => (
+            {visibleAttempts.map((a) => (
               <div
                 key={a.id}
                 className="flex items-center gap-3 rounded-lg border border-line bg-panel/50 px-3 py-2.5"

@@ -7,11 +7,27 @@ import { Button } from "@/components/ui/button";
 import { ProgressRing, formatClock } from "@/components/app/rings";
 import { Stepper } from "@/components/app/stepper";
 import { TaskContent } from "@/components/app/task-content";
+import { SphereGlyph } from "@/components/app/sphere-glyph";
+import { sphereMeta } from "@/lib/design-tokens";
 import type { RoundStart } from "@/lib/client";
 import { haptic } from "@/lib/client";
 import { cn } from "@/lib/utils";
 
 const DIFF_LABEL: Record<string, string> = { easy: "лёгкий", normal: "средний", hard: "сложный" };
+
+/** Бейдж сферы: цвет + глиф, всегда видно, откуда кейс. */
+function SphereBadge({ slug, title }: { slug: string; title: string }) {
+  const meta = sphereMeta(slug);
+  return (
+    <span
+      className="inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5"
+      style={{ background: `${meta.color}1a`, color: meta.color }}
+    >
+      <SphereGlyph slug={slug} color={meta.color} className="h-3 w-3" />
+      <span className="font-display text-[9px] font-bold tracking-wider">{title.toUpperCase()}</span>
+    </span>
+  );
+}
 
 interface RoundScreenProps {
   round: RoundStart;
@@ -136,7 +152,8 @@ export function RoundScreen({
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="min-w-0 flex-1">
-            <p className="font-display text-[10px] tracking-[0.2em] text-dim">
+            <p className="flex items-center gap-2 font-display text-[10px] tracking-[0.2em] text-dim">
+              {round.domain && <SphereBadge slug={round.domain.slug} title={round.domain.title} />}
               {round.modeTitle.toUpperCase()} · {DIFF_LABEL[round.difficulty]?.toUpperCase()}
               {maxAttempts > 1 && ` · ПОПЫТКА ${attemptNo}/${maxAttempts}`}
             </p>
