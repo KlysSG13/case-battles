@@ -2,6 +2,7 @@ import { prisma } from "./prisma";
 import { mskWeekStartUtc } from "./msk";
 import { levelFromXp } from "./levels";
 import { leagueFor } from "./modes";
+import { isProActive } from "./entitlements";
 
 export interface LeaderboardRow {
   place: number;
@@ -9,6 +10,7 @@ export interface LeaderboardRow {
   level: number;
   xp: number;
   isMe?: boolean;
+  isPro?: boolean;
 }
 
 export interface LeaderboardResult {
@@ -73,7 +75,7 @@ export async function getLeaderboard(
   const meInclude = currentUserId && !topIds.includes(currentUserId) ? [currentUserId] : [];
   const users = await prisma.user.findMany({
     where: { id: { in: [...topIds, ...meInclude] } },
-    select: { id: true, firstName: true, username: true, xpTotal: true },
+    select: { id: true, firstName: true, username: true, xpTotal: true, proUntil: true },
   });
   const byId = new Map(users.map((u) => [u.id, u]));
 
@@ -85,6 +87,7 @@ export async function getLeaderboard(
       level: s.level,
       xp: s.xp,
       isMe: s.userId === currentUserId,
+      isPro: u ? isProActive(u) : false,
     };
   });
 

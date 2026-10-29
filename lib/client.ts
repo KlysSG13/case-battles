@@ -278,8 +278,8 @@ export interface CompletedAttempt {
 
 export interface LeaderboardData {
   period: "week" | "all" | "league";
-  rows: { place: number; name: string; level: number; xp: number; isMe?: boolean }[];
-  me: { place: number; name: string; level: number; xp: number; isMe?: boolean } | null;
+  rows: { place: number; name: string; level: number; xp: number; isMe?: boolean; isPro?: boolean }[];
+  me: { place: number; name: string; level: number; xp: number; isMe?: boolean; isPro?: boolean } | null;
 }
 
 export interface DuelSide {

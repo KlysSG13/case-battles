@@ -74,6 +74,7 @@ export function LeaderboardScreen({ refreshToken }: LeaderboardScreenProps) {
       <div className="min-w-0 flex-1">
         <p className={cn("truncate text-[14px] font-semibold", row.isMe ? "text-neon" : "text-fog")}>
           {row.name} {row.isMe && "· вы"}
+          {row.isPro && <span className="ml-1 rounded bg-magenta/20 px-1 py-px font-display text-[8px] font-bold text-magenta">PRO</span>}
         </p>
         <p className="text-[11px] text-dim">уровень {row.level}</p>
       </div>

@@ -70,11 +70,36 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // PRO истекает через ≤2 дней — напоминание (дедуп 1/сутки, тип pro_expiry)
+  let proExpiryNotified = 0;
+  const soon = new Date(Date.now() + 2 * 24 * 3600 * 1000);
+  const proUsers = await prisma.user.findMany({
+    where: { proUntil: { gt: new Date(), lte: soon } },
+    select: { id: true, telegramId: true, proUntil: true },
+  });
+  for (const u of proUsers) {
+    try {
+      await prisma.reminderLog.create({
+        data: { userId: u.id, date: today, type: "pro_expiry" },
+      });
+    } catch {
+      continue; // уже уведомляли сегодня
+    }
+    const until = u.proUntil?.toLocaleDateString("ru-RU", { timeZone: "Europe/Moscow" }) ?? "";
+    const res = await tgApi("sendMessage", {
+      chat_id: u.telegramId,
+      parse_mode: "HTML",
+      text: `💎 PRO истекает ${until}. Продлите, чтобы сохранить безлимит раундов и подсказки: /pro`,
+    });
+    if (res.ok) proExpiryNotified++;
+  }
+
   return NextResponse.json({
     ok: true,
     sent,
     skipped,
     mascotNotified,
+    proExpiryNotified,
     total: streakCandidates.length,
   });
 }
