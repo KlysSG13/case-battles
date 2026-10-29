@@ -140,6 +140,13 @@ async function main(): Promise<void> {
 
   // ================= 2. Таймеры/сложность =================
   console.log("\n2. Таймеры и сложность");
+  const rRescueCore = await call("/api/app/round/start", { method: "POST", body: JSON.stringify({ mode: "rescue", difficulty: "normal", domainId: 1 }) }, USER.timers);
+  ok(
+    "rescue (core): лёгкий кейс в блоках, ≤ 2 таблиц",
+    !!rRescueCore.body?.task?.blocks?.length && (rRescueCore.body.task.blocks.filter((b: any) => b.type === "table").length <= 2),
+    `блоки: ${(rRescueCore.body?.task?.blocks ?? []).map((b: any) => b.type).join(",")}`
+  );
+  ok("rescue (core): подсказка механики", typeof rRescueCore.body?.modeHint === "string" && rRescueCore.body.modeHint.length > 0);
   const rEasy = await call("/api/app/round/start", { method: "POST", body: JSON.stringify({ mode: "rescue", difficulty: "easy" }) }, USER.timers);
   ok("rescue easy: 360×1.2 = 432", rEasy.body?.timeLimitSec === 432);
   const rHard = await call("/api/app/round/start", { method: "POST", body: JSON.stringify({ mode: "rescue", difficulty: "hard" }) }, USER.timers);
@@ -153,7 +160,11 @@ async function main(): Promise<void> {
 
   // ================= 3. Питч =================
   console.log("\n3. Питч инвестору");
-  ok("питчу выдан статический кейс", !!rPitch.body?.case?.body && !rPitch.body?.scenario);
+  ok(
+    "питчу выдан лёгкий core-кейс (task-блоки)",
+    !!rPitch.body?.task?.blocks?.length && !rPitch.body?.scenario && !!rPitch.body?.modeHint,
+    `блоки: ${(rPitch.body?.task?.blocks ?? []).map((b: any) => b.type).join(",")}`
+  );
   const rPitch2 = await call("/api/app/round/start", { method: "POST", body: JSON.stringify({ mode: "pitch", difficulty: "normal" }) }, USER.pitch);
   const pitchAnswer = [
     "Крючок: пока конкуренты возят ноутбук 4 дня, мы отдаём «сегодня» — и за это платят.",
