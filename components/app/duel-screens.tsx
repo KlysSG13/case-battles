@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProgressRing } from "@/components/app/rings";
+import { TaskContent } from "@/components/app/task-content";
 import {
   apiFetch,
   haptic,
@@ -551,11 +552,7 @@ export function DuelScreen({ duelId, onBack, onRematch, showToast }: DuelScreenP
       </header>
 
       <div className="flex-1 space-y-4 p-4 pb-40">
-        <Card>
-          <CardContent className="p-4">
-            <p className="whitespace-pre-line text-[15px] leading-relaxed text-fog/90">{duel.case?.body}</p>
-          </CardContent>
-        </Card>
+        <TaskContent body={duel.case?.body ?? ""} title={duel.case?.title} />
         <div>
           <div className="mb-1.5 flex items-center justify-between">
             <label className="font-display text-[11px] tracking-[0.2em] text-dim">ВАШ ОТВЕТ</label>

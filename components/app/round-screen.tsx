@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressRing, formatClock } from "@/components/app/rings";
 import { Stepper } from "@/components/app/stepper";
+import { TaskContent } from "@/components/app/task-content";
 import type { RoundStart } from "@/lib/client";
 import { haptic } from "@/lib/client";
 import { cn } from "@/lib/utils";
@@ -154,13 +155,7 @@ export function RoundScreen({
         {isScenario ? (
           <ScenarioBlock round={round} />
         ) : (
-          <Card>
-            <CardContent className="p-4">
-              <p className="whitespace-pre-line text-[15px] leading-relaxed text-fog/90">
-                {round.case?.body}
-              </p>
-            </CardContent>
-          </Card>
+          <TaskContent body={round.case?.body ?? ""} title={round.case?.title} />
         )}
 
         {prevMissed && prevMissed.length > 0 && (

@@ -107,3 +107,119 @@ body {
 .no-scrollbar {
   scrollbar-width: none;
 }
+
+/* ---- Карточка задания: статичные анимации на рамке/заголовке ---- */
+
+.task-frame {
+  position: relative;
+  padding: 1px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(110deg, rgba(0, 240, 255, 0.35), rgba(0, 240, 255, 0.08) 35%, rgba(255, 45, 120, 0.3) 70%, rgba(0, 240, 255, 0.35));
+  background-size: 220% 100%;
+  animation: frame-shift 9s linear infinite;
+}
+
+.task-panel {
+  position: relative;
+  border-radius: 13px;
+  background: var(--color-panel);
+  padding: 1rem;
+  overflow: hidden;
+}
+
+/* сканлиния: мягкая полоса проходит по карточке, контент не смещается */
+.task-panel::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -35%;
+  height: 30%;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(0, 240, 255, 0.05),
+    transparent
+  );
+  animation: task-scan 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes frame-shift {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 220% 0;
+  }
+}
+
+@keyframes task-scan {
+  0%,
+  64% {
+    top: -35%;
+  }
+  88% {
+    top: 105%;
+  }
+  100% {
+    top: 105%;
+  }
+}
+
+/* typewriter-набор заголовка (длина через --n/--w из inline-стиля) */
+.task-title {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+  vertical-align: bottom;
+  animation:
+    type-in 0.9s steps(var(--n, 20), end) both,
+    glitch-in 1.1s steps(2, jump-none) 0.95s both;
+}
+
+@keyframes type-in {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--w, 100%);
+  }
+}
+
+@keyframes glitch-in {
+  0%,
+  100% {
+    text-shadow: none;
+    opacity: 1;
+  }
+  25% {
+    text-shadow:
+      1px 0 rgba(255, 45, 120, 0.8),
+      -1px 0 rgba(0, 240, 255, 0.8);
+    opacity: 0.85;
+  }
+  50% {
+    text-shadow: none;
+    opacity: 1;
+  }
+  75% {
+    text-shadow: 1px 0 rgba(0, 240, 255, 0.6);
+    opacity: 0.9;
+  }
+}
+
+/* доступность: без движения */
+@media (prefers-reduced-motion: reduce) {
+  .task-frame,
+  .task-panel::after,
+  .task-title {
+    animation: none !important;
+  }
+  .task-title {
+    width: auto !important;
+    white-space: normal !important;
+  }
+}
