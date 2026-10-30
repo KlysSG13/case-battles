@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, Flag, Send } from "lucide-react";
+import { ArrowLeft, Flag, Lightbulb, Send, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProgressRing, formatClock } from "@/components/app/rings";
 import { Stepper } from "@/components/app/stepper";
 import { TaskContent } from "@/components/app/task-content";
 import { SphereGlyph } from "@/components/app/sphere-glyph";
+import { HintSheet } from "@/components/app/hint-sheet";
 import { sphereMeta, PERCENT_COLORS } from "@/lib/design-tokens";
 import type { RoundStart } from "@/lib/client";
-import { haptic } from "@/lib/client";
+import { apiFetch, haptic, tgWebApp } from "@/lib/client";
 import { cn } from "@/lib/utils";
 
 const DIFF_LABEL: Record<string, string> = { easy: "лёгкий", normal: "средний", hard: "сложный" };
@@ -113,6 +114,61 @@ export function RoundScreen({
 }: RoundScreenProps) {
   const [answer, setAnswer] = useState("");
   const [remaining, setRemaining] = useState(round.timeLimitSec);
+  const [hintOpen, setHintOpen] = useState(false);
+  const [hintBalance, setHintBalance] = useState<number | null>(null);
+  const [hintText, setHintText] = useState<string | null>(null);
+  const [hintBusy, setHintBusy] = useState(false);
+
+  // баланс подсказок: ленивый дневной грант происходит при первом чтении
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await apiFetch<{ balance: number }>("/api/app/hint");
+        if (!cancelled) setHintBalance(res.balance);
+      } catch {
+        if (!cancelled) setHintBalance(0);
+      }
+    }, 0);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // покупка из sheet-оффера: инвойс на сервере → WebApp.openInvoice (вне Telegram — новая вкладка)
+  const buySku = async (sku: string) => {
+    try {
+      const res = await apiFetch<{ link: string }>("/api/app/payments/invoice", {
+        method: "POST",
+        body: JSON.stringify({ sku }),
+      });
+      const tg = tgWebApp() as { openInvoice?: (link: string) => void } | null;
+      if (tg?.openInvoice) tg.openInvoice(res.link);
+      else if (typeof window !== "undefined") window.open(res.link, "_blank");
+    } catch {
+      /* токен бота не настроен и т.п. — оффер просто не откроется */
+    }
+  };
+
+  const useHint = async () => {
+    if (hintBusy || hintText) return;
+    setHintBusy(true);
+    try {
+      const res = await apiFetch<{ hint: string; balance: number }>("/api/app/hint", {
+        method: "POST",
+        body: JSON.stringify({ roundId: round.roundId }),
+      });
+      setHintText(res.hint);
+      setHintBalance(res.balance);
+      setHintOpen(false);
+      haptic("success");
+    } catch {
+      setHintOpen(true); // sheet покажет оффер покупки при нулевом балансе
+    } finally {
+      setHintBusy(false);
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setRemaining((r) => (r > 0 ? r - 1 : 0)), 1000);
@@ -165,9 +221,40 @@ export function RoundScreen({
       </header>
 
       <div className="flex-1 space-y-4 p-4 pb-40">
-        {round.modeHint && (
-          <div className="rounded-lg border border-neon/30 bg-neon/6 px-4 py-2.5 text-[12px] leading-relaxed text-neon/90">
-            💡 {round.modeHint}
+        <div className="flex items-start gap-2">
+          {round.modeHint && (
+            <div className="flex-1 rounded-lg border border-neon/30 bg-neon/6 px-4 py-2.5 text-[12px] leading-relaxed text-neon/90">
+              💡 {round.modeHint}
+            </div>
+          )}
+          <button
+            onClick={() => {
+              haptic("light");
+              if (hintText) return; // уже открытая наводка остаётся на экране
+              setHintOpen(true);
+            }}
+            className={cn(
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border transition-colors",
+              hintText ? "border-line text-dim" : "border-neon/40 bg-neon/10 text-neon"
+            )}
+            aria-label={`Подсказка (баланс: ${hintBalance ?? "…"})`}
+            title="Подсказка"
+          >
+            <Lightbulb className="h-5 w-5" />
+            <span className="ml-1 font-display text-[10px] font-bold">{hintBalance ?? "…"}</span>
+          </button>
+        </div>
+
+        {hintText && (
+          <div className="rounded-lg border border-amber-400/40 bg-amber-400/8 px-4 py-3">
+            <p className="font-display text-[10px] tracking-[0.2em] text-amber-300">ПОДСКАЗКА</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-fog/90">{hintText}</p>
+            <button
+              onClick={() => setHintText(null)}
+              className="mt-2 font-display text-[10px] tracking-wider text-dim"
+            >
+              <X className="mr-1 inline h-3 w-3" />СКРЫТЬ
+            </button>
           </div>
         )}
         {round.scenarioFallback && (
@@ -255,6 +342,17 @@ export function RoundScreen({
           </Button>
         </div>
       </div>
+    <HintSheet
+      open={hintOpen}
+      balance={hintBalance}
+      busy={hintBusy}
+      onUse={useHint}
+      onClose={() => setHintOpen(false)}
+      onBuy={(sku) => {
+        setHintOpen(false);
+        buySku(sku);
+      }}
+    />
     </div>
   );
 }
