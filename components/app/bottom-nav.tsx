@@ -17,6 +17,8 @@ export type Screen =
   | "top"
   | "profile"
   | "rewards"
+  | "pro"
+  | "cosmetics"
   | "limit";
 
 interface BottomNavProps {

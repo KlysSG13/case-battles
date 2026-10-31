@@ -16,7 +16,7 @@ export function LimitScreen({ onHome, onPro }: LimitScreenProps) {
       </div>
       <div>
         <p className="font-display text-lg font-bold text-fog">
-          Бесплатные кейсы на сегодня закончились
+          Бесплатные раунды на сегодня закончились
         </p>
         <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-dim">
           Лимит — 3 кейса в сутки. Новый набор откроется завтра в 00:00 по Москве. С PRO — без
