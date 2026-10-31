@@ -214,6 +214,32 @@ scripts/                      — tg-webhook, selfcheck(-modes), e2e(-modes), de
 - `NEXT_PUBLIC_DEV_MODE` — служебный вход для локального предпросмотра вне Telegram;
   действует только в `next dev` (`lib/dev-mode.ts` отсекает по `NODE_ENV` на сборке).
 
+## Как расширять банк кейсов (v1.2.2)
+
+Конвейер: **ИИ генерирует черновики → человек ревьюит → аддитивный импорт → деплой**.
+Финальное слово всегда за человеком; никаких админ-роутов и автоимпорта нет.
+
+```bash
+# 1) Генерация (локально, нужен ~/.z-ai-config; ≤3 вызовов LLM на кейс, N ≤ 10)
+npm run cases:generate -- --kind=core --sphere=business --count=3
+
+# 2) Ревью: откройте каждый data/case-drafts/<файл>.json
+#    — точность цифр, арифметика таблиц (итоговых строк быть не должно),
+#    — ровно один вопрос, очевидная линия рассуждения, объём.
+#    Плохие: mv data/case-drafts/<файл>.json data/case-drafts/rejected/
+
+# 3) Импорт (валидация zod + бизнес-правила + детектор дублей; core → data/core-cases.json,
+#    classic → data/classic-cases.json + локальный db:seed)
+npm run cases:import -- --file=data/case-drafts/<файл>.json            # core
+npm run cases:import -- --file=data/case-drafts/<файл>.json --sphere=law  # classic
+
+# 4) Деплой контента: обычный пайплайн (core доезжает с билдом, classic — с pg:prepare/seed)
+# 5) Smoke на проде: SQL-подсчёт кейсов до/после + сыграть один новый кейс
+```
+
+Реестр тем `data/case-topics.json` (69 записей) используется генератором (анти-повторы),
+selfcheck (полнота и отсутствие дублей) и импортёром (дополняет после успеха).
+
 ## Деплой (Node-хостинг или VPS)
 
 Локально разработка идёт на SQLite (`DATABASE_URL=file:./dev.db`, `npm run db:push`).

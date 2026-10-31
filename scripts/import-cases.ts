@@ -15,7 +15,7 @@ try {
 }
 
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, renameSync } from "node:fs";
 import {
   CoreDraftSchema,
   ClassicDraftSchema,
@@ -28,7 +28,8 @@ import {
 } from "./cases-shared";
 import { loadCoreBank, loadClassicBank, resetBankCache } from "../lib/case-bank";
 
-const fileArg = process.argv[process.argv.indexOf("--file") + 1];
+async function main(): Promise<void> {
+const fileArg = process.argv.find((a) => a.startsWith("--file="))?.slice("--file=".length) ?? process.argv[process.argv.indexOf("--file") + 1];
 const force = process.argv.includes("--force");
 
 if (!fileArg || !existsSync(fileArg)) {
@@ -105,7 +106,7 @@ if (isCore) {
 } else {
   // классика: вложить в домен сферы... домен берём из manifest? Нет: в черновике нет domainSlug.
   // Классический черновик содержит только title/body/criteria; сферу задаём аргументом --sphere.
-  const sphereArg = process.argv[process.argv.indexOf("--sphere") + 1];
+  const sphereArg = process.argv.find((a) => a.startsWith("--sphere="))?.slice("--sphere=".length) ?? process.argv[process.argv.indexOf("--sphere") + 1];
   if (!["business", "product", "law"].includes(sphereArg ?? "")) {
     console.error("✗ Для классики укажите --sphere=business|product|law");
     process.exit(1);
@@ -121,7 +122,6 @@ if (isCore) {
   }
   domain.cases.push(classicDraft!);
   const tmp = "data/classic-cases.json.tmp";
-  const { writeFileSync, renameSync } = await import("node:fs");
   writeFileSync(tmp, JSON.stringify(bank, null, 2) + "\n");
   renameSync(tmp, "data/classic-cases.json");
   console.log(`✓ Импортирован классический кейс «${candidateTitle}» → ${sphereArg}`);
@@ -136,7 +136,7 @@ const topics = JSON.parse(readFileSync("data/case-topics.json", "utf8")) as Arra
 }>;
 const sphere = isCore
   ? coreDraft!.domainSlug
-  : process.argv[process.argv.indexOf("--sphere") + 1];
+  : (process.argv.find((a) => a.startsWith("--sphere="))?.slice("--sphere=".length) ?? process.argv[process.argv.indexOf("--sphere") + 1]);
 topics.push({ kind: isCore ? "core" : "classic", sphere, topic: candidateTitle });
 if (!atomicWriteJson("data/case-topics.json", topics)) {
   console.error("✗ Не удалось обновить реестр тем (проверьте data/case-topics.json вручную)");
@@ -174,3 +174,9 @@ const coreCount = loadCoreBank().length;
 const classicCounts = loadClassicBank().map((d) => `${d.slug}:${d.cases.length}`).join(" ");
 console.log(`\nСчётчики: core=${coreCount} | classic: ${classicCounts}`);
 console.log("Следующий шаг: закоммитьте data/*.json и задеплойте по DEPLOY.md.");
+}
+
+main().catch((e) => {
+  console.error("Ошибка импорта:", e instanceof Error ? e.message : e);
+  process.exit(1);
+});

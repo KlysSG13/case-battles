@@ -139,6 +139,13 @@ npm run tg:webhook                 # ОБЯЗАТЕЛЬНО: allowed_updates + p
 — ожидается 8 классики на домен (v1.2.1: 24 всего), core считается по конфигам (45).
 Самопроверка банка: `npm run selfcheck:content`.
 
+**Генератор и импортёр кейсов (локальный инструмент, v1.2.2):**
+запускается на машине разработчика с `~/.z-ai-config` (см. README «AI-движок»):
+`npm run cases:generate -- --kind=core --sphere=business --count=3` → ревью черновиков в
+`data/case-drafts/` → `npm run cases:import -- --file=...` → коммит `data/*.json` → деплой
+(core доезжает с билдом, classic — с ближайшим `pg:prepare`). На проде инструмент не запускается;
+никаких прямых записей в прод-БД.
+
 **Живой smoke после выкатки** (реальные Stars, только вручную):
 1. В Mini App купите пачку подсказок за Stars → баланс вырос в sheet подсказки.
 2. `npm run stars:refund -- <telegram_payment_charge_id>` → в профиле платёж со статусом «возврат».

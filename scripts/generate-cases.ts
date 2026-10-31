@@ -25,6 +25,8 @@ import { CoreDraftSchema, ClassicDraftSchema, significantWords, topicOverlap, sl
 
 const args = process.argv.slice(2);
 const opt = (name: string): string | undefined => {
+  const inline = args.find((a) => a.startsWith(`--${name}=`));
+  if (inline) return inline.slice(name.length + 3);
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : undefined;
 };
@@ -32,15 +34,6 @@ const opt = (name: string): string | undefined => {
 const KIND = opt("kind");
 const SPHERE = opt("sphere");
 const COUNT = Number(opt("count") ?? 3);
-
-if ((KIND !== "core" && KIND !== "classic") || !["business", "product", "law"].includes(SPHERE ?? "")) {
-  console.log("Использование: npm run cases:generate -- --kind=core|classic --sphere=business|product|law --count=N (N ≤ 10)");
-  process.exit(1);
-}
-if (!Number.isInteger(COUNT) || COUNT < 1 || COUNT > 10) {
-  console.log("✗ count должен быть целым 1–10 (контроль стоимости)");
-  process.exit(1);
-}
 
 // ---------- z-ai клиент (как в lib/evaluator) ----------
 
@@ -55,6 +48,15 @@ async function createZai() {
   }
 }
 
+async function main(): Promise<void> {
+if ((KIND !== "core" && KIND !== "classic") || !["business", "product", "law"].includes(SPHERE ?? "")) {
+  console.log("Использование: npm run cases:generate -- --kind=core|classic --sphere=business|product|law --count=N (N ≤ 10)");
+  process.exit(1);
+}
+if (!Number.isInteger(COUNT) || COUNT < 1 || COUNT > 10) {
+  console.log("✗ count должен быть целым 1–10 (контроль стоимости)");
+  process.exit(1);
+}
 const zai = await createZai();
 if (!zai) {
   console.error(
@@ -237,4 +239,10 @@ console.log("ГЛАВНОЕ ПРАВИЛО: это ЧЕРНОВИКИ — отр
 console.log("Хорошие: npm run cases:import -- --file=data/case-drafts/<файл>.json");
 console.log("Плохие:   mv data/case-drafts/<файл>.json data/case-drafts/rejected/");
 
-if (existsSync("data/case-drafts/manifest.json") && manifest.drafts.length === 0) process.exit(1);
+if (manifest.drafts.length === 0) process.exit(1);
+}
+
+main().catch((e) => {
+  console.error("Ошибка генерации:", e instanceof Error ? e.message : e);
+  process.exit(1);
+});
