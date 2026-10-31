@@ -3,9 +3,10 @@
 Прод-стенд: Ubuntu 24.04 · `/opt/casebattles` · Nginx + Certbot (https://edtechbattles.shop) ·
 PM2 (fork, процесс `casebattles`) · PostgreSQL 16.
 
-> **v1.1.0 (UX-релиз):** новых миграций БД и серверных шагов нет — core-банк лёгких кейсов
-> живёт в коде (`lib/content/core.ts`), подача заданий — рендер-фолбэком на старых записях.
-> Стандартный пайплайн обновления (раздел А.9) не меняется.
+> **v1.2.0 (монетизация Stars):** первая миграция БД со времён v1.0.1 — пайплайн обновления
+> меняется (см. А.9): добавлены `prisma migrate deploy` и обязательный перезапуск
+> `npm run tg:webhook` (новый allowed_updates `pre_checkout_query` — без него оплаты
+> Stars НЕ работают). Перед миграцией сделайте `pg_dump` (раздел В.1).
 
 ---
 
@@ -112,12 +113,33 @@ curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" https://edtechbattles.
 curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" https://edtechbattles.shop/api/cron/duels
 ```
 
-### 9. Обновление релиза (3 команды)
+### 9. Обновление релиза (v1.2.0+)
 
 ```bash
+# 0) бэкап перед миграцией (первая с v1.0.1!)
+sudo -u postgres pg_dump casegames > /root/casegames-$(date +%F).dump
+
 cd /opt/casebattles && git pull
-npm ci && npm run build
+npm ci
+npx prisma migrate deploy          # миграция payments (migrate deploy, НЕ db push)
+npm run build
 pm2 restart casebattles --update-env
+npm run tg:webhook                 # ОБЯЗАТЕЛЬНО: allowed_updates + pre_checkout_query
+```
+
+Проверьте, что в выводе `tg:webhook` есть строка
+`✓ message + callback_query + pre_checkout_query зарегистрированы`.
+
+**Живой smoke после выкатки** (реальные Stars, только вручную):
+1. В Mini App купите пачку подсказок за Stars → баланс вырос в sheet подсказки.
+2. `npm run stars:refund -- <telegram_payment_charge_id>` → в профиле платёж со статусом «возврат».
+3. Создайте PRO-инвойс (профиль → PRO) и отмените без оплаты — ничего не должно сломаться.
+4. `getWebhookInfo` показывает три типа updates.
+
+**Возврат Stars (ручной инструмент):**
+```bash
+npm run stars:refund -- <telegram_payment_charge_id>
+# косметика отзывается и снимается с экипировки; proUntil/подсказки ретроактивно не отзываются
 ```
 
 ---

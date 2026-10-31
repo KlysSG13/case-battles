@@ -19,6 +19,7 @@
     "selfcheck:modes": "tsx scripts/selfcheck-modes.ts",
     "e2e": "tsx scripts/e2e.ts",
     "e2e:modes": "tsx scripts/e2e-modes.ts",
+    "e2e:stars": "tsx scripts/e2e-stars.ts",
     "test": "vitest run"
   },
   "dependencies": {
