@@ -121,6 +121,7 @@ export interface Profile {
   isPro: boolean;
   proUntil: string | null;
   hintsBalance: number;
+  equipped: { skin: string | null; aura: string | null };
   profilePublic: boolean;
   rating: number;
   league: {

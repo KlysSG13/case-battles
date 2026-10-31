@@ -25,6 +25,7 @@ export interface ResultPayload {
 interface ResultScreenProps {
   payload: ResultPayload;
   mascot?: { charge: number; sleeping: boolean };
+  equipped?: { skin: string | null; aura: string | null };
   onHome: () => void;
   onProfile: () => void;
   onRetry: () => void;
@@ -44,6 +45,7 @@ const percentColor = tokenPercentColor;
 export function ResultScreen({
   payload,
   mascot,
+  equipped,
   onHome,
   onProfile,
   onRetry,
@@ -195,7 +197,7 @@ export function ResultScreen({
           {/* дрон-компаньон реагирует на исход */}
           {mascot && (
             <div className="absolute -right-5 -top-3">
-              <Drone charge={mascot.charge} state={droneState} size={62} />
+              <Drone charge={mascot.charge} state={droneState} size={62} skinSku={equipped?.skin} auraSku={equipped?.aura} />
             </div>
           )}
         </div>

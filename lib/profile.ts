@@ -13,6 +13,7 @@ export interface ProfilePayload {
   isPro: boolean;
   proUntil: string | null;
   hintsBalance: number;
+  equipped: { skin: string | null; aura: string | null };
   profilePublic: boolean;
   rating: number;
   league: {
@@ -79,6 +80,7 @@ export function profilePayload(
     isPro: isProActive(user),
     proUntil: user.proUntil?.toISOString() ?? null,
     hintsBalance: user.hintsBalance,
+    equipped: { skin: user.equippedSkin, aura: user.equippedAura },
     profilePublic: user.profilePublic,
     rating: user.rating,
     league: leagueProgress(user.rating),

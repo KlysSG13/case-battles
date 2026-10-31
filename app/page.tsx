@@ -12,6 +12,8 @@ import { LeaderboardScreen } from "@/components/app/leaderboard-screen";
 import { ProfileScreen } from "@/components/app/profile-screen";
 import { GalleryScreen } from "@/components/app/gallery-screen";
 import { RewardsScreen } from "@/components/app/rewards-screen";
+import { ProScreen } from "@/components/app/pro-screen";
+import { CosmeticsScreen } from "@/components/app/cosmetics-screen";
 import { LimitScreen } from "@/components/app/limit-screen";
 import { NoAuthScreen } from "@/components/app/noauth-screen";
 import {
@@ -292,6 +294,7 @@ export default function Page() {
               ? { charge: boot.profile.mascot.charge, sleeping: boot.profile.mascot.sleeping }
               : undefined
           }
+          equipped={boot?.profile?.equipped}
           onHome={openHome}
           onProfile={() => {
             setProfileRefresh((n) => n + 1);
@@ -350,6 +353,8 @@ export default function Page() {
           refreshToken={profileRefresh}
           showToast={showToast}
           onOpenRewards={() => setScreen("rewards")}
+          onOpenPro={() => setScreen("pro")}
+          onOpenCosmetics={() => setScreen("cosmetics")}
           onOpenMyGallery={() => {
             setGallery({ caseId: null });
             setScreen("gallery");
@@ -366,12 +371,28 @@ export default function Page() {
         />
       )}
 
+      {screen === "pro" && (
+        <ProScreen
+          profile={boot?.profile ?? null}
+          onBack={() => setScreen("home")}
+          showToast={showToast}
+        />
+      )}
+
+      {screen === "cosmetics" && (
+        <CosmeticsScreen
+          profile={boot?.profile ?? null}
+          onBack={() => setScreen("profile")}
+          showToast={showToast}
+        />
+      )}
+
       {screen === "rewards" && (
         <RewardsScreen profile={boot?.profile ?? null} onBack={() => setScreen("home")} />
       )}
 
       {screen === "limit" && (
-        <LimitScreen onHome={openHome} onPro={() => showToast("Скоро ✨")} />
+        <LimitScreen onHome={openHome} onPro={() => setScreen("pro")} />
       )}
 
       {showNav && <BottomNav active={screen} onNavigate={(s) => setScreen(s)} />}

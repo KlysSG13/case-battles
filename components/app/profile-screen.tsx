@@ -16,6 +16,8 @@ interface ProfileScreenProps {
   onOpenRewards: () => void;
   onOpenMyGallery: () => void;
   onOpenDuel: (duelId: number) => void;
+  onOpenPro: () => void;
+  onOpenCosmetics: () => void;
   showToast: (text: string) => void;
 }
 
@@ -36,6 +38,8 @@ export function ProfileScreen({
   onOpenRewards,
   onOpenMyGallery,
   onOpenDuel,
+  onOpenPro,
+  onOpenCosmetics,
   showToast,
 }: ProfileScreenProps) {
   const [data, setData] = useState<MeData | null>(null);
@@ -166,18 +170,27 @@ export function ProfileScreen({
                 </p>
               </div>
             </div>
-            <button
-              onClick={onOpenRewards}
-              className={cn(
-                "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-display text-[10px] font-bold",
-                profile.rewardsUnlocked
-                  ? "border-neon/50 bg-neon/10 text-neon"
-                  : "border-line text-dim"
-              )}
-            >
-              <Gift className="h-3.5 w-3.5" />
-              НАГРАДЫ
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onOpenPro}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-display text-[10px] font-bold",
+                  profile.isPro ? "border-neon/50 bg-neon/10 text-neon" : "border-magenta/40 bg-magenta/10 text-magenta"
+                )}
+              >
+                PRO
+              </button>
+              <button
+                onClick={onOpenRewards}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 font-display text-[10px] font-bold",
+                  profile.rewardsUnlocked ? "border-neon/50 bg-neon/10 text-neon" : "border-line text-dim"
+                )}
+              >
+                <Gift className="h-3.5 w-3.5" />
+                НАГРАДЫ
+              </button>
+            </div>
           </div>
           {profile.league.next && (
             <div className="mt-2.5">
@@ -221,6 +234,8 @@ export function ProfileScreen({
               charge={profile.mascot.charge}
               state={profile.mascot.sleeping ? "sleep" : "idle"}
               size={96}
+              skinSku={profile.equipped?.skin}
+              auraSku={profile.equipped?.aura}
             />
             <div className="min-w-0 flex-1">
               <p className="font-display text-sm font-bold text-fog">
@@ -239,6 +254,12 @@ export function ProfileScreen({
               {profile.mascot.xpBonusActive && (
                 <p className="mt-1.5 font-display text-[10px] tracking-wider text-neon">БОНУС +10% XP АКТИВЕН</p>
               )}
+              <button
+                onClick={onOpenCosmetics}
+                className="mt-2 font-display text-[10px] font-bold tracking-wider text-neon"
+              >
+                МАСТЕРСКАЯ →
+              </button>
             </div>
           </CardContent>
         </Card>

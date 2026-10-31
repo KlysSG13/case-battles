@@ -61,3 +61,27 @@ export function percentColor(percent: number): string {
   if (percent >= 40) return PERCENT_COLORS.mid;
   return PERCENT_COLORS.bad;
 }
+
+// ---- Косметика дрона: визуальные конфиги по sku (значения — только здесь) ----
+
+export interface DroneStyle {
+  skin: string; // акцент корпуса (обводка, сопла, ядро)
+  aura: string; // внешнее свечение (экипированная аура)
+}
+
+export const DRONE_STYLES: Record<string, DroneStyle> = {
+  default: { skin: NEON.primary, aura: "transparent" },
+  "skin-neon-magenta": { skin: NEON.secondary, aura: "transparent" },
+  "skin-emerald": { skin: "#20e3a0", aura: "transparent" },
+  "skin-gold": { skin: LEAGUE_COLORS.gold, aura: "transparent" },
+  "skin-pro-quantum": { skin: "#b26bff", aura: "#b26bff" },
+  "skin-veteran": { skin: "#89a7b8", aura: "transparent" },
+  "skin-legend": { skin: LEAGUE_COLORS.platinum, aura: LEAGUE_COLORS.platinum },
+  "aura-halo": { skin: NEON.primary, aura: NEON.primary },
+};
+
+export function droneStyle(skinSku?: string | null, auraSku?: string | null): DroneStyle {
+  const skin = DRONE_STYLES[skinSku ?? ""] ?? DRONE_STYLES.default;
+  const aura = auraSku ? (DRONE_STYLES[auraSku]?.aura ?? "transparent") : "transparent";
+  return { skin: skin.skin, aura };
+}

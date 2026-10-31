@@ -86,6 +86,8 @@ export function HomeScreen({
             charge={profile.mascot.charge}
             state={profile.mascot.sleeping ? "sleep" : "idle"}
             size={56}
+            skinSku={profile.equipped?.skin}
+            auraSku={profile.equipped?.aura}
           />
           <span className="font-display text-[10px] text-dim">{profile.mascot.charge}%</span>
         </div>

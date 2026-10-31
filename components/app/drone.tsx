@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { PERCENT_COLORS } from "@/lib/design-tokens";
+import { PERCENT_COLORS, droneStyle } from "@/lib/design-tokens";
 
 type DroneState = "idle" | "happy" | "sleep";
 
@@ -10,21 +10,18 @@ interface DroneProps {
   charge: number; // 0..100 — уровень читается цветом ядра и свечением
   state?: DroneState;
   size?: number; // базовый размер в px (мини 56 / реакция 96 / полный 140)
+  skinSku?: string | null; // экипированный скин (DRONE_STYLES)
+  auraSku?: string | null; // экипированная аура
+  previewSku?: string; // превью в магазине: перекрывает экипированный скин
   className?: string;
-}
-
-function coreColor(charge: number): string {
-  if (charge >= 60) return "var(--color-neon)";
-  if (charge >= 25) return PERCENT_COLORS.mid;
-  return "var(--color-magenta)";
 }
 
 /**
  * Синт-дрон: чистый SVG + CSS-анимации, без картинок и зависимостей.
  * Парение, вращение сопел, пульс глаза-сенсора, редкий глитч; уровень —
- * цвет ядра и модули на корпусе. prefers-reduced-motion замирает.
+ * цвет ядра и модули на корпусе. Скин/аура — из дизайн-токенов. prefers-reduced-motion замирает.
  */
-export function Drone({ charge, state = "idle", size = 96, className }: DroneProps) {
+export function Drone({ charge, state = "idle", size = 96, skinSku, auraSku, previewSku, className }: DroneProps) {
   const [glitch, setGlitch] = useState(false);
   useEffect(() => {
     if (state === "sleep") return;
@@ -41,15 +38,18 @@ export function Drone({ charge, state = "idle", size = 96, className }: DronePro
     return () => clearTimeout(timer);
   }, [state]);
 
-  const core = coreColor(charge);
+  const style = droneStyle(previewSku ?? skinSku, previewSku ? previewSku : auraSku);
+  // уровень заряда читается оттенком; скин задаёт базовый акцент корпуса
+  const core = charge >= 25 ? style.skin : PERCENT_COLORS.bad;
   const sleeping = state === "sleep";
   const happy = state === "happy";
   const modules = charge >= 60 ? 2 : charge >= 40 ? 1 : 0;
+  const auraGlow = style.aura !== "transparent" ? `0 0 ${size / 3}px ${style.aura}66` : undefined;
 
   return (
     <div
       className={cn("drone relative select-none", sleeping && "drone-sleep", happy && "drone-happy", glitch && "drone-glitch", className)}
-      style={{ width: size, height: size * 1.15 }}
+      style={{ width: size, height: size * 1.15, filter: auraGlow ? `drop-shadow(${auraGlow})` : undefined }}
       role="img"
       aria-label={`Дрон-компаньон: заряд ${charge}%, ${sleeping ? "спячка" : happy ? "радуется" : "на связи"}`}
     >
