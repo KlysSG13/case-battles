@@ -60,6 +60,24 @@ const CASE_HINTS: Record<string, string> = {
     "Первые 24 часа решают: уведомления РКН и субъектам — обязанность по срокам, а не выбор.",
   "Претензия правообладателя: название кафе и чужой товарный знак":
     "Посчитай три сценария в деньгах: ребрендинг, торг за компенсацию, суд — и проверь реальное использование знака истцом.",
+  "Выход в Казань при кассовом разрыве":
+    "Разведи цикл денег и сезон: посчитай, какой объём заказа переживёт кассовый разрыв, и сравни с ценой опоздания к сезону.",
+  "Партнёры 50/50: тупик в долях":
+    "Посчитай цену каждого сценария выхода из 50/50 и начни с варианта, который сохраняет бизнес, а не побеждает партнёра.",
+  "Демпинг: конкурент режет цены на треть":
+    "Сравни его себестоимость со своей и найди клиентов, которым важны гарантии и оформление, а не только цена.",
+  "Миграция с legacy-биллинга за 12 недель":
+    "Двигай волнами с двойным запуском и сверки списаний — «большой взрыв» на 42 тысячах аккаунтов недопустим.",
+  "Churn вырос после редизайна, NPS — тоже":
+    "Разбей отток по когортам: уходят 45+ — считай деньги сегментов, а не средний NPS.",
+  "Все просят интеграцию, метрики против":
+    "Посчитай реальную маржу ERP-сегмента с поддержкой и сравни с альтернативным использованием команды.",
+  "Подрядчик сорвал сроки: взаимные просрочки":
+    "Твоя просрочка оплаты и его предел неустойки уравновешивают спор — ищи зачёт и гарантию передачи кода.",
+  "Рассылки без согласий: рост против 152-ФЗ":
+    "Посчитай штрафы и блокировку домена против 400 тысяч выручки — легальная кампания на чистом сегменте почти не теряет денег.",
+  "Маркетплейс заблокировал карточки перед сезоном":
+    "Приоритизируй апелляции по выручке сезона и почини корневую причину — документы на старое юрлицо.",
   "Аренда +40%: пункт об индексации и рынок вырос на 15%":
     "Проверь пределы одностороннего пересмотра ставки и сравни доплату 40% с рыночными 15% — переговорная позиция строится на этом зазоре.",
 };
@@ -77,32 +95,26 @@ async function seedDomain(domain: DomainSeed): Promise<void> {
       throw new Error(`Кейс «${seedCase.title}»: сумма весов ${weightSum} != 100`);
     }
 
+    // Строго аддитивно (v1.2.1): существующие кейсы НЕ обновляем и не удаляем —
+    // на них ссылаются Attempt. Новые — создаём с hint из CASE_HINTS.
     const existing = await prisma.case.findFirst({
       where: { domainId: record.id, title: seedCase.title },
       select: { id: true },
     });
-    const caseRecord = existing
-      ? await prisma.case.update({
-          where: { id: existing.id },
-          data: {
-            body: seedCase.body,
-            difficulty: seedCase.difficulty,
-            timeLimitSec: seedCase.timeLimitSec ?? 240,
-            isActive: true,
-            hint: CASE_HINTS[seedCase.title] ?? null,
-          },
-        })
-      : await prisma.case.create({
-          data: {
-            domainId: record.id,
-            title: seedCase.title,
-            body: seedCase.body,
-            difficulty: seedCase.difficulty,
-            timeLimitSec: seedCase.timeLimitSec ?? 240,
-            isActive: true,
-            hint: CASE_HINTS[seedCase.title] ?? null,
-          },
-        });
+    if (existing) {
+      continue;
+    }
+    const caseRecord = await prisma.case.create({
+      data: {
+        domainId: record.id,
+        title: seedCase.title,
+        body: seedCase.body,
+        difficulty: seedCase.difficulty,
+        timeLimitSec: seedCase.timeLimitSec ?? 240,
+        isActive: true,
+        hint: CASE_HINTS[seedCase.title] ?? null,
+      },
+    });
 
     // рубрика пересоздаётся целиком — сид идемпотентен по заголовку кейса
     await prisma.criterion.deleteMany({ where: { caseId: caseRecord.id } });
