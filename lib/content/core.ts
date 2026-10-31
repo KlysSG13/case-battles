@@ -13,6 +13,8 @@ export interface CoreCase {
   hint: string; // наводка на линию мышления (не готовый ответ)
 }
 
+import { CORE_CASES_V2 } from "./core-more";
+
 export const CORE_CASES: CoreCase[] = [
   // ---------- Бизнес ----------
   {
@@ -153,6 +155,7 @@ export const CORE_CASES: CoreCase[] = [
     missedFactors: ["письменное согласие на обработку изображения", "согласие на распространение/рекламу", "можно публиковать только обезличенно"],
     hint: "Для изображения человека нужно отдельное согласие именно на распространение.",
   },
+...CORE_CASES_V2,
 ];
 
 export function coreCasesForDomain(domainSlug: string): CoreCase[] {
