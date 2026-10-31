@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { lazyDailyGrant } from "@/lib/hints";
-import { coreCaseBySlug } from "@/lib/content/core";
+import { coreCaseBySlug } from "@/lib/case-bank";
 import { MODES } from "@/lib/modes";
 
 export const runtime = "nodejs";

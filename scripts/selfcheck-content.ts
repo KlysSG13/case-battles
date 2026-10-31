@@ -12,10 +12,8 @@ try {
   /* переменные могут быть заданы снаружи */
 }
 
-import { CORE_CASES } from "../lib/content/core";
-import { businessDomain } from "../lib/content/business";
-import { productDomain } from "../lib/content/product";
-import { lawDomain } from "../lib/content/law";
+import { readFileSync } from "node:fs";
+import { CORE_CASES, businessDomain, productDomain, lawDomain } from "../lib/case-bank";
 import type { TaskBlock } from "../lib/task-blocks";
 
 let passed = 0;
@@ -177,13 +175,24 @@ async function main(): Promise<void> {
   ok("объём 150–300 слов, difficulty 2–3, финальный вопрос, рубрика 4–5 с весами = 100",
     classicProblems.length === 0, classicProblems.join("; ") || "все 24 ок");
 
+  // ---------- Реестр тем ----------
+  console.log("\n3. Реестр тем (data/case-topics.json)");
+  const topics = JSON.parse(readFileSync("data/case-topics.json", "utf8")) as Array<{ kind: string; sphere: string; topic: string }>;
+  const coreTopics = topics.filter((t) => t.kind === "core");
+  const classicTopics = topics.filter((t) => t.kind === "classic");
+  ok("реестр покрывает весь core-банк", coreTopics.length === CORE_CASES.length && CORE_CASES.every((c) => coreTopics.some((t) => t.topic === c.title)), `${coreTopics.length}/${CORE_CASES.length}`);
+  const classicAll = CLASSIC_DOMAINS.flatMap((d) => d.cases.map((c) => ({ sphere: d.slug, title: c.title })));
+  ok("реестр покрывает всю классику", classicTopics.length === classicAll.length && classicAll.every((c) => classicTopics.some((t) => t.topic === c.title)), `${classicTopics.length}/${classicAll.length}`);
+  const topicKeys = topics.map((t) => `${t.kind}|${t.sphere}|${t.topic.toLowerCase()}`);
+  ok("дублей тем внутри kind+sphere нет", new Set(topicKeys).size === topicKeys.length);
+
   // ---------- Пересечение банков ----------
   console.log("\n3. Пересечения банков");
   ok("заголовки core и классики не пересекаются",
     !coreTitles.some((t) => classicTitles.includes(t)));
 
   // ---------- БД (если доступна) ----------
-  console.log("\n4. БД (после seed)");
+  console.log("\n5. БД (после seed)");
   try {
     const { PrismaClient } = await import("@prisma/client");
     const prisma = new PrismaClient();

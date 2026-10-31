@@ -1,0 +1,347 @@
+[
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Кофейня: какая цена выгоднее"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Скидка поставщика: брать или нет"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Поднять ли цену на 10%"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Краш-рейт после релиза"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Где теряются пользователи"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Пуши: сколько не слишком"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Испытательный срок: можно ли уволить"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Возврат предоплаты по договору"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Фото клиента в рекламе кафе"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Касса: счёт оплатят через 30 дней"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Жалоба: суп оказался испорчен"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Скидка 20% или кэшбэк 15%"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Поставщик привёз половину к субботе"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Нужен ли пятый бариста"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Реклама окупается первым чеком?"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Сток не продаётся"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Куда вложить 300 тысяч"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Отзыв за скидку"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Предоплата 50% незнакомцу"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Два канала продаж"
+  },
+  {
+    "kind": "core",
+    "sphere": "business",
+    "topic": "Сколько вывести себе"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Две фичи, один спринт"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Выручка на юзера упала на 12%"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "A/B: клики вверх, выручка вниз"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "«Это не баг, это фича»"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Все просят тёмную тему"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Просадка на выборе тарифа"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Страница грузится 6 секунд"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Инфраструктура съедает маржу"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "NPS высокий, отток растёт"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Продажи принесли список из 30 фич"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Когорта марта возвращается хуже"
+  },
+  {
+    "kind": "core",
+    "sphere": "product",
+    "topic": "Обеденный пик валит сервис"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "В договоре нет срока работ"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Ремонт затянулся на месяц"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Обещания остались в телеграме"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Курс не подошёл: вернуть деньги"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "УСН 6%: сколько отложить"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Форма собирает паспорта"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Подписка продлилась сама"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Телефон сломался на 13-й месяц"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Логотип сделал фрилансер"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Договор подписал не директор"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Долг 120 тысяч игнорируют"
+  },
+  {
+    "kind": "core",
+    "sphere": "law",
+    "topic": "Отзыв «мошенники» без фактов"
+  },
+  {
+    "kind": "classic",
+    "sphere": "business",
+    "topic": "Кофейня у метро: расти или закрепиться"
+  },
+  {
+    "kind": "classic",
+    "sphere": "business",
+    "topic": "Пекарня и крупная сеть: заказ, который съест половину печей"
+  },
+  {
+    "kind": "classic",
+    "sphere": "business",
+    "topic": "Дебиторка 2,4 млн: крупнейший клиент не платит, но заказывает снова"
+  },
+  {
+    "kind": "classic",
+    "sphere": "business",
+    "topic": "Два объекта, одна бригада: срыв сроков и штрафы"
+  },
+  {
+    "kind": "classic",
+    "sphere": "business",
+    "topic": "Онлайн-школа: повторные покупки падают, маркетинг просит бюджет"
+  },
+  {
+    "kind": "classic",
+    "sphere": "business",
+    "topic": "Выход в Казань при кассовом разрыве"
+  },
+  {
+    "kind": "classic",
+    "sphere": "business",
+    "topic": "Партнёры 50/50: тупик в долях"
+  },
+  {
+    "kind": "classic",
+    "sphere": "business",
+    "topic": "Демпинг: конкурент режет цены на треть"
+  },
+  {
+    "kind": "classic",
+    "sphere": "product",
+    "topic": "Мобильный банк: конверсия регистрации упала после редизайна"
+  },
+  {
+    "kind": "classic",
+    "sphere": "product",
+    "topic": "Доставка в трёх городах: SLA падает, а центр сортировки винит курьеров"
+  },
+  {
+    "kind": "classic",
+    "sphere": "product",
+    "topic": "SaaS для логистики: клиент с 18% выручки требует кастомную фичу"
+  },
+  {
+    "kind": "classic",
+    "sphere": "product",
+    "topic": "Игра: после обновления экономики D7 упал, а выручка выросла"
+  },
+  {
+    "kind": "classic",
+    "sphere": "product",
+    "topic": "Поиск в каталоге: клики упали, две гипотезы, три недели до релиза"
+  },
+  {
+    "kind": "classic",
+    "sphere": "product",
+    "topic": "Миграция с legacy-биллинга за 12 недель"
+  },
+  {
+    "kind": "classic",
+    "sphere": "product",
+    "topic": "Churn вырос после редизайна, NPS — тоже"
+  },
+  {
+    "kind": "classic",
+    "sphere": "product",
+    "topic": "Все просят интеграцию, метрики против"
+  },
+  {
+    "kind": "classic",
+    "sphere": "law",
+    "topic": "Увольнение за прогул: больничный пришёл после приказа"
+  },
+  {
+    "kind": "classic",
+    "sphere": "law",
+    "topic": "Поставка сорвана: наводнение, неустойка и предоплата 50%"
+  },
+  {
+    "kind": "classic",
+    "sphere": "law",
+    "topic": "Утечка базы клиентов через подрядчика рассылок"
+  },
+  {
+    "kind": "classic",
+    "sphere": "law",
+    "topic": "Претензия правообладателя: название кафе и чужой товарный знак"
+  },
+  {
+    "kind": "classic",
+    "sphere": "law",
+    "topic": "Аренда +40%: пункт об индексации и рынок вырос на 15%"
+  },
+  {
+    "kind": "classic",
+    "sphere": "law",
+    "topic": "Подрядчик сорвал сроки: взаимные просрочки"
+  },
+  {
+    "kind": "classic",
+    "sphere": "law",
+    "topic": "Рассылки без согласий: рост против 152-ФЗ"
+  },
+  {
+    "kind": "classic",
+    "sphere": "law",
+    "topic": "Маркетплейс заблокировал карточки перед сезоном"
+  }
+]

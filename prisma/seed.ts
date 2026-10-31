@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import { businessDomain } from "../lib/content/business";
-import { productDomain } from "../lib/content/product";
-import { lawDomain } from "../lib/content/law";
-import type { DomainSeed } from "../lib/content/types";
+import { businessDomain, productDomain, lawDomain } from "../lib/case-bank";
+
+// Единый источник классики — data/classic-cases.json (v1.2.2)
+type DomainSeed = typeof businessDomain;
 
 // tsx не подхватывает .env автоматически — грузим вручную (Node >= 20.12)
 try {

@@ -11,7 +11,7 @@ import {
   timeLimitFor,
 } from "@/lib/modes";
 import { generateScenario, toPublicScenario } from "@/lib/scenario";
-import { coreCasesForDomain } from "@/lib/content/core";
+import { coreCasesForDomain } from "@/lib/case-bank";
 import { completedRoundsToday } from "@/lib/rounds";
 import { FREE_DAILY_LIMIT, DAILY_RATE_LIMIT } from "@/lib/gamification";
 import { mskDayStartUtc } from "@/lib/msk";
