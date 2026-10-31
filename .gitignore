@@ -44,3 +44,6 @@ next-env.d.ts
 # локальная SQLite-база разработки
 prisma/dev.db
 *.db
+
+# черновики генератора — не коммитим (фикстуры в tests/)
+data/case-drafts/

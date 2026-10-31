@@ -21,7 +21,9 @@
     "e2e": "tsx scripts/e2e.ts",
     "e2e:modes": "tsx scripts/e2e-modes.ts",
     "e2e:stars": "tsx scripts/e2e-stars.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "cases:generate": "tsx scripts/generate-cases.ts",
+    "cases:import": "tsx scripts/import-cases.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
