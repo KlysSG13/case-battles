@@ -115,6 +115,7 @@ npm run dev         # http://localhost:3000
 | `npm run deploy-check` | Преддеплойная проверка (URL/HTTPS, `/api/health`, `getMe`, webhook; `--start` — поднимает `next start` локально) |
 | `npm run selfcheck` | Самопроверка AI-оценщика: 3 ответа (сильный/средний/слабый) |
 | `npm run selfcheck:modes` | Самопроверка движка баттлов: сценарии, 3 стиля соперника, дрон/лиги |
+| `npm run selfcheck:content` | Самопроверка контентных банков: уникальность, распределение, объём, веса рубрик, арифметика таблиц |
 | `npm run e2e` | Прогон классических критериев приёмки (23 проверки; сервер запущен) |
 | `npm run e2e:modes` | Прогон флоу баттлов, включая core-подачу v1.1.0 (79 проверок) |
 | `npm run e2e:stars` | Монетизация: вебхук-зачисления всех kind, идемпотентность, PRO-квота, подсказки, косметика (36 проверок) |
@@ -174,7 +175,8 @@ lib/
 prisma/schema.prisma          — User, Domain, Case, Criterion, Attempt, Badge, UserBadge,
                                 Duel, RatingMatch, ReminderLog (без enum/Json)
 prisma/schema.postgres.prisma — автогенерат для PostgreSQL (npm run pg:schema)
-prisma/seed.ts + lib/content/ — 15 hard-кейсов с рубриками (веса = 100), 12 бейджей
+prisma/seed.ts + lib/content/ — 24 hard-кейса с рубриками (веса = 100), 12 бейджей;
+                                core-банк лёгких кейсов — 45 в конфигах (lib/content/core*.ts)
 scripts/                      — tg-webhook, selfcheck(-modes), e2e(-modes), deploy-check, gen-pg-schema
 ```
 

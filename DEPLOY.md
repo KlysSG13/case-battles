@@ -130,6 +130,15 @@ npm run tg:webhook                 # ОБЯЗАТЕЛЬНО: allowed_updates + p
 Проверьте, что в выводе `tg:webhook` есть строка
 `✓ message + callback_query + pre_checkout_query зарегистрированы`.
 
+**Контентные релизы (как добавляется контент):** новые кейсы классики добавляются в
+`lib/content/{business,product,law}.ts`, core-кейсы — в `lib/content/core*.ts` (банк в коде,
+сид не нужен), подсказки классики — в `CASE_HINTS` в `prisma/seed.ts`. Сид строго аддитивный:
+существующие кейсы не обновляются и не удаляются (на них ссылаются Attempt). После выкатки
+контентного релиза выполните `npm run db:seed` (входит в pg:prepare при первом деплое) и
+проверьте SQL-подсчётом: `SELECT d.title, count(*) FROM "Case" c JOIN "Domain" d ON d.id=c."domainId" GROUP BY 1;`
+— ожидается 8 классики на домен (v1.2.1: 24 всего), core считается по конфигам (45).
+Самопроверка банка: `npm run selfcheck:content`.
+
 **Живой smoke после выкатки** (реальные Stars, только вручную):
 1. В Mini App купите пачку подсказок за Stars → баланс вырос в sheet подсказки.
 2. `npm run stars:refund -- <telegram_payment_charge_id>` → в профиле платёж со статусом «возврат».

@@ -17,6 +17,7 @@
     "deploy-check": "tsx scripts/deploy-check.ts",
     "selfcheck": "tsx scripts/selfcheck.ts",
     "selfcheck:modes": "tsx scripts/selfcheck-modes.ts",
+    "selfcheck:content": "tsx scripts/selfcheck-content.ts",
     "e2e": "tsx scripts/e2e.ts",
     "e2e:modes": "tsx scripts/e2e-modes.ts",
     "e2e:stars": "tsx scripts/e2e-stars.ts",
