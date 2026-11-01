@@ -234,14 +234,48 @@ npm run pg:prepare            # при пустой/мигрирующей ба�
 ## Г. Зачистка
 
 1. Убедиться, что рабочая копия одна: `ls /opt/casebattles`.
-2. Удалить старую копию из `/root`: `ls /root` → `sudo rm -rf /root/<старая_папка_проекта>`.
-   Причина: Turbopack-сканер, запущенный внутри `/root`, читал `/root/.pm2/rpc.sock` и
-   падал с `os error 6`.
-3. Опционально (рекомендуется): ротация логов PM2:
-   ```bash
-   pm2 install pm2-logrotate
-   pm2 set pm2-logrotate:max_size 10M
-   ```
+2. Остатки старой копии в `/root`: посмотрите вручную `ls -la /root` и, если видите
+   прежнюю папку проекта (не `.pm2` и не рабочие файлы сервера), удалите её сами
+   осознанно. Причина остатков: Turbopack-сканер, запущенный внутри `/root`, читал
+   `/root/.pm2/rpc.sock` и падал с `os error 6`. Автоматических `rm -rf` здесь
+   намеренно нет — решение и удаление выполняет человек.
+
+## Е. Обслуживание (v1.2.3)
+
+### Ротация логов PM2 (pm2-logrotate)
+
+```bash
+pm2 install pm2-logrotate
+pm2 set pm2-logrotate:max_size 10M
+pm2 set pm2-logrotate:retain 14
+pm2 set pm2-logrotate:compress true
+pm2 set pm2-logrotate:rotateInterval '0 0 * * *'
+pm2 conf pm2-logrotate        # проверка: max_size 10M, retain 14, compress true
+```
+
+### Резервное копирование БД
+
+`setup-cron.sh` (v1.2.3) идемпотентно добавляет в root-crontab ежедневный бэкап в 03:00:
+`pg_dump casegames | gzip > /root/backups/casegames-<дата>.sql.gz` + удаление дампов
+старше 7 дней. Переустановка: `sudo bash scripts/setup-cron.sh` (существующие строки
+daily/duels не дублируются); план без записи: `sudo bash scripts/setup-cron.sh --dry-run`.
+Проверка: `sudo crontab -l | grep pg_dump` — ровно 1 строка; дампы: `ls -lh /root/backups/`.
+
+### Restore-drill (обязателен: бэкап без проверенного восстановления — не бэкап)
+
+```bash
+# 1) свежий дамп → scratch-БД
+gunzip -c /root/backups/casegames-<дата>.sql.gz | sudo -u postgres psql casegames_restore
+#    (если scratch уже существует: sudo -u postgres dropdb casegames_restore перед этим)
+
+# 2) smoke: счётчики совпадают с продом
+sudo -u postgres psql casegames_restore -c 'SELECT count(*) FROM "User";'
+sudo -u postgres psql casegames_restore -c 'SELECT count(*) FROM "Payment";'
+sudo -u postgres psql casegames_restore -c 'SELECT count(*) FROM "Case";'
+
+# 3) убрать scratch
+sudo -u postgres dropdb casegames_restore
+```
 
 ## Д. Преддеплойная проверка
 
