@@ -47,3 +47,6 @@ prisma/dev.db
 
 # черновики генератора — не коммитим (фикстуры в tests/)
 data/case-drafts/
+
+# аудит-отчёт (локальный артефакт)
+AUDIT-REPORT.md
