@@ -10,7 +10,7 @@ module.exports = {
       args: "start",
       exec_mode: "fork",
       max_memory_restart: "600M",
-      env: { NODE_ENV: "production" },
+      env: { NODE_ENV: "production", HOSTNAME: "127.0.0.1" },
       // не тащим NEXT_PUBLIC_DEV_MODE на прод — dev-вход собирается выключенным
       time: true,
     },
