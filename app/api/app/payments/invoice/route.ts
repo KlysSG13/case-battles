@@ -23,16 +23,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Товар не найден или не продаётся", code: "bad_sku" }, { status: 400 });
   }
 
-  const token = process.env.BOT_TOKEN ?? "";
-  if (!token) {
-    return NextResponse.json(
-      { error: "Платежи недоступны: бот не настроен", code: "bot_unconfigured" },
-      { status: 503 }
-    );
-  }
-
-  // rate-limit: считаем оплаченные платежи за сутки (запись на каждый инвойс
-  // не заводим — createInvoiceLink бесплатен, защита от аномального объёма)
+  // rate-limit проверяется ДО доступности бота: лимит денег важнее диагностики
+  // (запись на каждый инвойс не заводим — считаем оплаченные платежи за сутки)
   const todayPayments = await prisma.payment.count({
     where: { userId: user.id, createdAt: { gte: mskDayStartUtc() } },
   });
@@ -40,6 +32,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: "Слишком много платёжных запросов за сутки", code: "invoice_rate" },
       { status: 429 }
+    );
+  }
+
+  const token = process.env.BOT_TOKEN ?? "";
+  if (!token) {
+    return NextResponse.json(
+      { error: "Платежи недоступны: бот не настроен", code: "bot_unconfigured" },
+      { status: 503 }
     );
   }
 

@@ -73,7 +73,7 @@ function successfulPayment(fromId: number, sku: string, chargeId: string, stars:
   };
 }
 
-const U = { payer: 800000001, free: 800000002, pvp: 800000003 };
+const U = { payer: 800000001, free: 800000002, pvp: 800000003, rl: 800000004 };
 
 async function cleanup(): Promise<void> {
   const ids = await prisma.user.findMany({
@@ -122,6 +122,18 @@ async function main(): Promise<void> {
     skip("инвойс pro30 (живой Telegram)", "BOT_TOKEN пуст в этой среде — роут вернёт 503 (graceful)");
     const inv = await call("/api/app/payments/invoice", { method: "POST", body: JSON.stringify({ sku: "pro30" }) }, U.payer);
     ok("без BOT_TOKEN -> 503 (не 500)", inv.status === 503, inv.body?.code);
+  }
+
+  // rate-limit инвойсов: 10 оплаченных за сутки → следующий инвойс 429
+  {
+    // лимит считается до доступности бота — работает и без BOT_TOKEN
+    const warm = await call("/api/app/payments/invoice", { method: "POST", body: JSON.stringify({ sku: "hints10" }) }, U.rl);
+    ok("инвойс до лимита -> не 429", warm.status !== 429, String(warm.status));
+    for (let i = 0; i < 10; i++) {
+      await webhook(successfulPayment(U.rl, "hints10", `stars_rl_${i}`, 50));
+    }
+    const rl = await call("/api/app/payments/invoice", { method: "POST", body: JSON.stringify({ sku: "hints10" }) }, U.rl);
+    ok("11-й инвойс за сутки -> 429 invoice_rate", rl.status === 429 && rl.body?.code === "invoice_rate");
   }
 
   // ============ 3. Вебхук: зачисления всех kind ============
