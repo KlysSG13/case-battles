@@ -7,10 +7,10 @@ module.exports = {
       name: "casebattles",
       cwd: "/opt/casebattles",
       script: "npm",
-      args: "start",
+      args: "start -- -H 127.0.0.1",
       exec_mode: "fork",
       max_memory_restart: "600M",
-      env: { NODE_ENV: "production", HOSTNAME: "127.0.0.1" },
+      env: { NODE_ENV: "production" },
       // не тащим NEXT_PUBLIC_DEV_MODE на прод — dev-вход собирается выключенным
       time: true,
     },
