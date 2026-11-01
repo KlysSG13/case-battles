@@ -14,7 +14,7 @@
 крючок→проблема→решение→рынок→ask) · ⚔️ Дуэли (AI-соперник в 3 стилях, hard-банк, асинхронные
 PvP-вызовы по ссылке). Сложность режимов разделена на профили: **hard** (классика/дуэли —
 банк не меняется) и **core** (спасение/питч/конструктор — лёгкие одношаговые кейсы 10–15 секунд
-на решение, подсказка механики на экране раунда, `lib/content/core.ts`).
+на решение, подсказка механики на экране раунда, `data/core-cases.json` (`lib/case-bank.ts` — загрузчик)).
 Модификатор «Три попытки»: зачёт по лучшей. Сложность: таймер ×1.2/×1.0/×0.8,
 рейтинг-очки ×0.8/×1.0/×1.3. Free-квота в раундах: раунд с 3 попытками = 1 из 3 за сутки.
 
@@ -176,7 +176,7 @@ prisma/schema.prisma          — User, Domain, Case, Criterion, Attempt, Badge,
                                 Duel, RatingMatch, ReminderLog (без enum/Json)
 prisma/schema.postgres.prisma — автогенерат для PostgreSQL (npm run pg:schema)
 prisma/seed.ts + lib/content/ — 24 hard-кейса с рубриками (веса = 100), 12 бейджей;
-                                core-банк лёгких кейсов — 45 в конфигах (lib/content/core*.ts)
+                                core-банк лёгких кейсов — 45 в data/core-cases.json
 scripts/                      — tg-webhook, selfcheck(-modes), e2e(-modes), deploy-check, gen-pg-schema
 ```
 
