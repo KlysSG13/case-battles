@@ -284,3 +284,75 @@ npm run deploy-check                 # https, /api/health, getMe, getWebhookInfo
 npm run deploy-check -- --start      # + локальный подъём next start
 npm test                             # регрессия авторизации (initData)
 ```
+
+
+---
+
+## Ж. Автономный деплой через provision-server.sh (ПЛАН Б)
+
+Когда прямой SSH из среды разработки невозможен, весь деплой (этапы 0–7 ТЗ) выполняет
+один идемпотентный скрипт на сервере: `scripts/provision-server.sh`. Он не трогает
+sshd (hardening — отдельный ручной этап §Ж3), не правит код приложения, не дропает БД;
+секреты читает только из `/opt/casebattles/.env` и маскирует их в выводе.
+
+### Ж.1. Подготовка (с вашей машины, где лежит репозиторий)
+
+```bash
+# 1) Залить код на сервер (без .env/.git/node_modules):
+rsync -az --exclude node_modules --exclude .next --exclude .env --exclude .git \
+  ./ deploy@<SERVER_IP>:/opt/casebattles/
+
+# 2) Минимальный .env (всё остальное скрипт догенерирует сам):
+ssh deploy@<SERVER_IP> 'mkdir -p /opt/casebattles'
+ssh deploy@<SERVER_IP> 'printf "BOT_TOKEN=\"<токен от @BotFather>\"\nCERTBOT_EMAIL=\"<email для Let.s Encrypt>\"\n" > /opt/casebattles/.env'
+ssh deploy@<SERVER_IP> 'chmod 600 /opt/casebattles/.env'
+```
+
+### Ж.2. Запуск (на сервере)
+
+```bash
+sudo bash /opt/casebattles/scripts/provision-server.sh
+```
+
+Скрипт: разведка и режим (CLEAN/UPDATE) → ОС/Node20/PM2/юзер deploy/swap/ufw/fail2ban →
+PostgreSQL (роль+база в CLEAN) → дозаполнение .env (DATABASE_URL, CRON_SECRET,
+TELEGRAM_WEBHOOK_SECRET — openssl rand, маскированы в выводе) → бэкапы кода и БД в UPDATE →
+`npm ci` → `pg:prepare` → `build` → PM2 из `deploy/ecosystem.config.cjs` + автозапуск →
+nginx из `deploy/nginx/casebattles.conf` → certbot и webhook **только если DNS уже
+смотрит на сервер** (иначе печатает блок «Докатка после DNS») → cron (daily/duels/backup) →
+smoke-тесты и итоговый отчёт.
+
+Повторный запуск безопасен (идемпотентен). Если BOT_TOKEN пуст — скрипт честно
+предупредит и продолжит без бота/webhook.
+
+### Ж.3. Hardening SSH — строго последним и только вручную
+
+```bash
+# 1) Публичный ключ на сервер (с вашей машины):
+ssh-copy-id -i ~/.ssh/id_ed25519.pub deploy@<SERVER_IP>
+# 2) Проверить НОВОЙ сессией вход по ключу (ДО отключения пароля!):
+ssh -i ~/.ssh/id_ed25519 deploy@<SERVER_IP> 'sudo whoami'   # → root
+# 3) Только теперь отключить пароль (с бэкапом конфига):
+sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+sudo sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
+sudo sshd -t && sudo systemctl reload ssh
+# 4) Проверить: вход по ключу работает, по паролю — отказ.
+```
+
+### Ж.4. Ручная проверка после деплоя (2 минуты, в Telegram)
+
+Бот → `/start` → кнопка «Открыть Кейс-баттлы» → приложение открылось, профиль загрузился →
+решить 1 кейс → XP начислен. Если что-то не так — §Б (Troubleshooting).
+
+## З. Ротация доступов
+
+| Что | Как | Частота |
+|---|---|---|
+| BOT_TOKEN | §В (BotFather /revoke → .env → pm2 restart --update-env → npm run tg:webhook) | при компрометации; планово ~раз в 6 мес |
+| SSH-ключ deploy | новый ключ: ssh-copy-id; проверить вход; удалить старую строку из /home/deploy/.ssh/authorized_keys | при уходе людей/компрометации |
+| CRON_SECRET / TELEGRAM_WEBHOOK_SECRET | openssl rand -hex 32 → .env → pm2 restart --update-env → npm run tg:webhook → sudo bash scripts/setup-cron.sh | при компрометации |
+| Пароль БД casegames | ALTER ROLE casegames WITH PASSWORD '<новый>' → обновить DATABASE_URL в .env → pm2 restart | при компрометации |
+| Сертификат Let's Encrypt | обновляется certbot'ом автоматически (timer); проверить: certbot renew --dry-run | — |
+
+После любой ротации — smoke: /api/health, /start у бота, один cron-эндпоинт с Bearer.
