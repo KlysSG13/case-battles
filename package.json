@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "postinstall": "if [ -f prisma/schema.postgres.prisma ]; then prisma generate --schema=prisma/schema.postgres.prisma; else prisma generate; fi",
     "lint": "eslint",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
