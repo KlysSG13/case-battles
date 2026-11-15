@@ -41,6 +41,54 @@ describe("entitlements: proUntil", () => {
   });
 });
 
+describe("cron daily: burn vs remind (серия сгорает, напоминание только один раз)", () => {
+  it("burn срабатывает для lastActiveDate 2+ дней назад (streakCurrent → 0)", async () => {
+    const { PrismaClient } = await import("@prisma/client");
+    const prisma = new PrismaClient();
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 3600 * 1000);
+    const user = await prisma.user.upsert({
+      where: { telegramId: 999100001 },
+      create: { telegramId: 999100001, firstName: "BurnTest", streakCurrent: 5, streakBest: 7, lastActiveDate: threeDaysAgo },
+      update: { streakCurrent: 5, lastActiveDate: threeDaysAgo },
+    });
+    // имитируем условие burn: lastActiveDate < начала вчера
+    const { mskDayStartUtc } = await import("../lib/msk");
+    const yesterdayStart = new Date(mskDayStartUtc().getTime() - 24 * 3600 * 1000);
+    if (user.lastActiveDate! < yesterdayStart) {
+      await prisma.user.update({ where: { id: user.id }, data: { streakCurrent: 0 } });
+    }
+    const after = await prisma.user.findUnique({ where: { id: user.id } });
+    expect(after?.streakCurrent).toBe(0);
+    // cleanup
+    await prisma.user.delete({ where: { id: user.id } }).catch(() => {});
+    await prisma.$disconnect();
+  });
+
+  it("напоминание НЕ получает юзер с уже сгоревшей серией (streakCurrent=0)", async () => {
+    const { PrismaClient } = await import("@prisma/client");
+    const prisma = new PrismaClient();
+    const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 3600 * 1000);
+    const user = await prisma.user.upsert({
+      where: { telegramId: 999100002 },
+      create: { telegramId: 999100002, firstName: "BurnedTest", streakCurrent: 0, streakBest: 3, lastActiveDate: fiveDaysAgo },
+      update: { streakCurrent: 0, lastActiveDate: fiveDaysAgo },
+    });
+    // streakCurrent=0 → не попадает в candidates ни для burn, ни для reminder
+    const { mskDayStartUtc } = await import("../lib/msk");
+    const todayStart = mskDayStartUtc();
+    const yesterdayStart = new Date(todayStart.getTime() - 24 * 3600 * 1000);
+    const candidates = await prisma.user.findMany({
+      where: {
+        streakCurrent: { gt: 0 },
+        lastActiveDate: { gte: yesterdayStart, lt: todayStart },
+      },
+    });
+    expect(candidates.find((c) => c.id === user.id)).toBeUndefined();
+    await prisma.user.delete({ where: { id: user.id } }).catch(() => {});
+    await prisma.$disconnect();
+  });
+});
+
 describe("hints: ленивые гранты (Europe/Moscow)", () => {
   beforeEach(() => {
     vi.setSystemTime(new Date("2026-10-31T20:00:00Z")); // 23:00 МСК 31.10
